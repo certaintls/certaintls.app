@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
@@ -21,7 +23,7 @@ class MyApp extends StatelessWidget {
           ),
           body: TabBarView(
             children: [
-              Icon(Icons.directions_car),
+              DeviceTrustedCerts(),
               Icon(Icons.directions_transit),
             ],
           )
@@ -29,4 +31,20 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+
+class DeviceTrustedCerts extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var certsDir = new Directory('/system/etc/security/cacerts');
+    List<FileSystemEntity> certs = certsDir.listSync(recursive: false, followLinks: false);
+    return ListView.builder(
+      itemCount: certs.length,
+      itemBuilder: (context, i) {
+        return ListTile(title: Text(File(certs[i].path).readAsStringSync()));
+      }
+
+    );
+  }
+
 }
