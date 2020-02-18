@@ -51,10 +51,29 @@ class DeviceTrustedCerts extends StatelessWidget {
         String certTxt = new File(certs[i].path).readAsStringSync();
         List<int> certData = PemCodec(PemLabel.certificate).decode(certTxt);
         String encoded = PemCodec(PemLabel.certificate).encode(certData);
-        X509CertificateData data = X509Utils.x509CertificateFromPem(encoded);
-        if (data.subject["2.5.4.10"] != null) {
-          return ListTile(title: Text(i.toString() + ' : ' +data.subject["2.5.4.10"] + ' (' +data.subject["2.5.4.6"] + ')'));
-        } else {return ListTile(title: Text(data.issuer.toString()));}
+        X509CertificateData data;
+        String txt;
+        if (i==131) {
+          String temp = '';
+        }
+        try {
+          data = X509Utils.x509CertificateFromPem(encoded);
+          if (data.subject["2.5.4.3"] != null) { // common name exist
+            txt = data.subject["2.5.4.3"];
+          } else if (data.subject["2.5.4.10"] != null) { // sorg exists
+            txt = data.subject["2.5.4.10"];
+          } else {
+            txt = 'NO NAME';
+          }
+          if (data.subject["2.5.4.6"] != null) { // country exits
+            txt += ' (' + data.subject["2.5.4.6"] + ')';
+          }
+          return ListTile(title: Text(txt));
+        } on ArgumentError {
+          return ListTile(title: Text(i.toString() + ':' +data.issuer.toString()));
+        } catch (e, s) {
+          return ListTile(title: Text(i.toString() + '- Exception:' + e.toString() +' : ' + certTxt));
+        }
       }
 
     );
