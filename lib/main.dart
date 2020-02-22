@@ -1,18 +1,15 @@
-import 'dart:convert';
 import 'dart:io';
-
 import 'package:basic_utils/basic_utils.dart';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
-import 'package:asn1lib/asn1lib.dart';
-import 'package:x509/x509.dart';
 import 'package:pem/pem.dart';
+import 'certificate_resource.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    CertificateResource cerRes = CertificateResource();
     return MaterialApp(
       title: 'CertainTLS',
       home: DefaultTabController(
@@ -29,8 +26,8 @@ class MyApp extends StatelessWidget {
           ),
           body: TabBarView(
             children: [
-              DeviceTrustedCerts(), // ‘system-trusted ‘ certificates /system/etc/security/
-              Icon(Icons.directions_transit), // ‘user-trusted’ certificates /data/misc/keychain/certs-added
+              DeviceCerts(path: cerRes.systemTrustedCertsPath), 
+              DeviceCerts(path: cerRes.userTrustedCertsPath),
             ],
           )
         ),
@@ -39,10 +36,15 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class DeviceTrustedCerts extends StatelessWidget {
+class DeviceCerts extends StatelessWidget {
+  final String path;
+
+  DeviceCerts({this.path});
+  
   @override
   Widget build(BuildContext context) {
-    var certsDir = new Directory('/system/etc/security/cacerts');
+    
+    var certsDir = new Directory(path);
     List<FileSystemEntity> certs = certsDir.listSync(recursive: false, followLinks: false);
     return ListView.builder(
       itemCount: certs.length,
@@ -53,14 +55,11 @@ class DeviceTrustedCerts extends StatelessWidget {
         String encoded = PemCodec(PemLabel.certificate).encode(certData);
         X509CertificateData data;
         String txt;
-        if (i==131) {
-          String temp = '';
-        }
         try {
           data = X509Utils.x509CertificateFromPem(encoded);
           if (data.subject["2.5.4.3"] != null) { // common name exist
             txt = data.subject["2.5.4.3"];
-          } else if (data.subject["2.5.4.10"] != null) { // sorg exists
+          } else if (data.subject["2.5.4.10"] != null) { // org exists
             txt = data.subject["2.5.4.10"];
           } else {
             txt = 'NO NAME';
@@ -71,7 +70,7 @@ class DeviceTrustedCerts extends StatelessWidget {
           return ListTile(title: Text(txt));
         } on ArgumentError {
           return ListTile(title: Text(i.toString() + ':' +data.issuer.toString()));
-        } catch (e, s) {
+        } catch (e) {
           return ListTile(title: Text(i.toString() + '- Exception:' + e.toString() +' : ' + certTxt));
         }
       }
