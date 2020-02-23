@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:basic_utils/basic_utils.dart';
+import 'package:certaintls/verifier_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:pem/pem.dart';
 import 'certificate_resource.dart';
+import 'package:path/path.dart';
 
 void main() => runApp(MyApp());
 
@@ -50,26 +52,27 @@ class DeviceCerts extends StatelessWidget {
       itemCount: certs.length,
       itemBuilder: (context, i) {
         //var certString = File(certs[i].path).readAsStringSync();
-        String certTxt = new File(certs[i].path).readAsStringSync();
+        File file = new File(certs[i].path);
+        String certTxt = file.readAsStringSync();
         List<int> certData = PemCodec(PemLabel.certificate).decode(certTxt);
         String encoded = PemCodec(PemLabel.certificate).encode(certData);
         X509CertificateData data;
-        String txt;
+        String org;
+        String country;
+        String commonName;
         try {
           data = X509Utils.x509CertificateFromPem(encoded);
-          if (data.subject["2.5.4.3"] != null) { // common name exist
-            txt = data.subject["2.5.4.3"];
-          } else if (data.subject["2.5.4.10"] != null) { // org exists
-            txt = data.subject["2.5.4.10"];
+          // If commone name is missing, use the org unit
+          commonName = data.subject['2.5.4.3'] != null ? data.subject['2.5.4.3'] : (data.subject['2.5.4.11'] ?? '');
+          // If org is missing, use the common name
+          if (data.subject['2.5.4.10'] == null) {
+            org = commonName;
+            commonName = '';
           } else {
-            txt = 'NO NAME';
+            org = data.subject['2.5.4.10'];
           }
-          if (data.subject["2.5.4.6"] != null) { // country exits
-            txt += ' (' + data.subject["2.5.4.6"] + ')';
-          }
-          return ListTile(title: Text(txt));
-        } on ArgumentError {
-          return ListTile(title: Text(i.toString() + ':' +data.issuer.toString()));
+          country = data.subject['2.5.4.6'] != null ? ' (' + data.subject['2.5.4.6']+ ')' : '';
+          return ListTile(leading: VerifierWidget(certString: certTxt,certName: basename(certs[i].path)), title: Text(org + country), subtitle: Text(commonName));
         } catch (e) {
           return ListTile(title: Text(i.toString() + '- Exception:' + e.toString() +' : ' + certTxt));
         }
