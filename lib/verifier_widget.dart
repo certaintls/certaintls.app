@@ -58,25 +58,29 @@ class _VerifierWidgetState extends State<VerifierWidget> {
             filename +
             '?format=TEXT';
     http.Client client = new http.Client();
-    var response = await client.get(Uri.parse(url));
-    switch (response.statusCode) {
-      case 200:
-        var bytes = response.bodyBytes;
-        String encoded = utf8.decode(bytes);
-        String readable = utf8.decode(base64.decode(encoded));
-        if (readable == fileString) {
-          status = statusVerified;
-        } else {
-          status = statusCompromised;
-        }
-        break;
-      case 403:
-        status = statusUnverifiable;
-        break;
-      case 500:
-      default:
-        status = statusTriedError;
-        break;
+    try {
+      var response = await client.get(Uri.parse(url));
+      switch (response.statusCode) {
+        case 200:
+          var bytes = response.bodyBytes;
+          String encoded = utf8.decode(bytes);
+          String readable = utf8.decode(base64.decode(encoded));
+          if (readable == fileString) {
+            status = statusVerified;
+          } else {
+            status = statusCompromised;
+          }
+          break;
+        case 404:
+          status = statusUnverifiable;
+          break;
+        case 500:
+        default:
+          status = statusTriedError;
+          break;
+      }
+    } catch (e) {
+      status = statusTriedError;
     }
     setState(() {});
   }
