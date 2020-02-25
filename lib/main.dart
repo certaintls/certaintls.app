@@ -72,7 +72,7 @@ class DeviceCerts extends StatelessWidget {
             org = data.subject['2.5.4.10'];
           }
           country = data.subject['2.5.4.6'] != null ? ' (' + data.subject['2.5.4.6']+ ')' : '';
-          return ListTile(leading: VerifierWidget(certString: certTxt,certName: basename(certs[i].path)), title: Text(org + country), subtitle: Text(commonName));
+          return ListTile(leading: VerifierWidget(spkiFingerPrint: data.publicKeyData.sha256Thumbprint, certName: basename(certs[i].path)), title: Text(org + country), subtitle: Text(commonName));
         } catch (e) {
           return ListTile(title: Text(i.toString() + '- Exception:' + e.toString() +' : ' + certTxt));
         }
