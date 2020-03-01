@@ -12,8 +12,10 @@ class MacOSCertificateFinder implements CertificateFinder {
     ProcessResult results = Process.runSync('security', ['find-certificate', '-pa', systemTrustedCertsPath]);
     String output = results.stdout as String;
     output.split(delimiter).forEach((pem) {
-      X509CertificateData data = X509Utils.x509CertificateFromPem(pem + delimiter);
-      certs.add(data);
+      if (pem.startsWith('-----BEGIN CERTIFICATE-----')) {
+        X509CertificateData data = X509Utils.x509CertificateFromPem(pem + delimiter);
+        certs.add(data);
+      }
     });
 
     return certs;
