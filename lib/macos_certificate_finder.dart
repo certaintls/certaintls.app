@@ -8,15 +8,10 @@ class MacOSCertificateFinder implements CertificateFinder {
 
   @override
   List<X509CertificateData> getSystemRootCerts() {
-    List<String> pems;
     List<X509CertificateData> certs = [];
-    Process.run('security', ['find-certificate', '-pa', systemTrustedCertsPath]).then((ProcessResult results) {
-      print(results.stdout);
-      String output = results.stdout as String;
-      pems = output.split(delimiter);
-    });
-
-    pems.forEach((pem) {
+    ProcessResult results = Process.runSync('security', ['find-certificate', '-pa', systemTrustedCertsPath]);
+    String output = results.stdout as String;
+    output.split(delimiter).forEach((pem) {
       X509CertificateData data = X509Utils.x509CertificateFromPem(pem + delimiter);
       certs.add(data);
     });
