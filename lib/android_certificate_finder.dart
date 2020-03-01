@@ -12,7 +12,7 @@ class AndroidCertificateFinder implements CertificateFinder {
   List<X509CertificateData> getSystemRootCerts() {
     var certsDir = new Directory(systemTrustedCertsPath);
     List<FileSystemEntity> certsList = certsDir.listSync(recursive: false, followLinks: false);
-    List<X509CertificateData> certs = new List();
+    List<X509CertificateData> certs = [];
 
     certsList.forEach((cert) {
       File file = new File(cert.path);

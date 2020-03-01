@@ -51,7 +51,7 @@ class DeviceCerts extends StatelessWidget {
     if (Platform.isAndroid) {
       finder = new AndroidCertificateFinder();
     } else if (Platform.isMacOS) {
-      //finder = new MacOSCertificateFinder();
+      finder = new MacOSCertificateFinder();
     }
     var certs = finder.getSystemRootCerts();
     return ListView.builder(
