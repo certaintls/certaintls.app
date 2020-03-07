@@ -57,7 +57,7 @@ class DeviceCerts extends StatelessWidget {
     return ListView.builder(
       itemCount: certs.length,
       itemBuilder: (context, i) {
-        X509CertificateData data = certs[i];
+        X509CertificateData data = certs[i].data;
         String org;
         String country;
         String commonName;
@@ -72,7 +72,7 @@ class DeviceCerts extends StatelessWidget {
             org = data.subject['2.5.4.10'];
           }
           country = data.subject['2.5.4.6'] != null ? ' (' + data.subject['2.5.4.6']+ ')' : '';
-          return ListTile(leading: Icon(Icons.info), title: Text(org + country), subtitle: Text(commonName));
+          return ListTile(leading: VerifierWidget(cert: certs[i], finder: finder), title: Text(org + country), subtitle: Text(commonName));
         } catch (e) {
           return ListTile(title: Text(i.toString() + '- Exception:' + e.toString()));
         }
