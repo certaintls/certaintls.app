@@ -42,7 +42,9 @@ class MacOSCertificateFinder implements CertificateFinder {
       String commonName = cert.data.subject['2.5.4.3'] != null ? cert.data.subject['2.5.4.3'] : (cert.data.subject['2.5.4.11'] ?? '');
       if (remoteCert.name == commonName) {
         match = true;
-        if (remoteCert.certFingerPrint == cert.data.sha1Thumbprint) {
+        // Add spaces
+        String prettyPrint = StringUtils.addCharAtPosition(cert.data.sha256Thumbprint, ' ', 2, repeat: true);
+        if (remoteCert.certFingerPrint == prettyPrint) {
           cert.status = X509CertificateStatus.statusVerified;
         } else cert.status = X509CertificateStatus.statusCompromised;
       }
