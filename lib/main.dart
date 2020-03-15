@@ -4,9 +4,9 @@ import 'package:certaintls/android_certificate_finder.dart';
 import 'package:certaintls/certificate_finder.dart';
 import 'package:certaintls/macos_certificate_finder.dart';
 import 'package:certaintls/verifier_widget.dart';
+import 'package:certaintls/windows_certificate_finder.dart';
 import 'package:flutter/material.dart';
 import 'certificate_resource.dart';
-import 'package:path/path.dart';
 
 void main() => runApp(MyApp());
 
@@ -49,9 +49,11 @@ class DeviceCerts extends StatelessWidget {
   Widget build(BuildContext context) {
     CertificateFinder finder;
     if (Platform.isAndroid) {
-      finder = new AndroidCertificateFinder();
+      finder = AndroidCertificateFinder();
     } else if (Platform.isMacOS) {
-      finder = new MacOSCertificateFinder();
+      finder = MacOSCertificateFinder();
+    } else if (Platform.isWindows) {
+      finder = WindowsCertificateFinder();
     }
     var certs = finder.getSystemRootCerts();
     return ListView.builder(
