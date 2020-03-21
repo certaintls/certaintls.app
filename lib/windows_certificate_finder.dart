@@ -17,10 +17,10 @@ class WindowsCertificateFinder implements CertificateFinder {
   final _closeMemo = new AsyncMemoizer();
 
   @override
-  List<X509Certificate> getSystemRootCerts() {
+  List<X509Certificate> getCertsByStore(String storePath) {
     List<X509Certificate> certs = [];
     ProcessResult results = Process.runSync(
-        'CertUtil', ['-v', '-store', systemTrustedCertsPath]);
+        'CertUtil', ['-v', '-store', storePath]);
     String output = results.stdout as String;
     output.split(delimiter).forEach((pem) {
       if (pem.startsWith('-----BEGIN CERTIFICATE-----')) {
@@ -94,6 +94,11 @@ class WindowsCertificateFinder implements CertificateFinder {
           fingerprints[i].querySelector('span').text));
     });
     return certs;
+  }
+
+  @override
+  Map<String, String> getCertStores() {
+    return {'System Root Certificates': systemTrustedCertsPath};
   }
 }
 

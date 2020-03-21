@@ -6,33 +6,40 @@ import 'package:certaintls/macos_certificate_finder.dart';
 import 'package:certaintls/verifier_widget.dart';
 import 'package:certaintls/windows_certificate_finder.dart';
 import 'package:flutter/material.dart';
-import 'certificate_resource.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    CertificateResource cerRes = CertificateResource();
+    CertificateFinder finder;
+    if (Platform.isAndroid) {
+      finder = AndroidCertificateFinder();
+    } else if (Platform.isMacOS) {
+      finder = MacOSCertificateFinder();
+    } else if (Platform.isWindows) {
+      finder = WindowsCertificateFinder();
+    }
+    var stores = finder.getCertStores();
+    List<Tab> tabs = [];
+    List<DeviceCerts> bodies = [];
+    stores.forEach((key, value) { 
+      tabs.add(Tab(text: key, icon: Icon(Icons.public)));
+      bodies.add(DeviceCerts(path: value));
+    });
     return MaterialApp(
       title: 'CertainTLS',
       home: DefaultTabController(
-        length: 2,
+        length: stores.length,
         child: Scaffold(
           appBar: AppBar(
             title: Text('Device Certificates'),
             bottom: TabBar(
-              tabs: [
-                Tab(text: 'Certificate Authorities', icon: Icon(Icons.public)),
-                Tab(text: 'User Installed', icon: Icon(Icons.folder_shared)),
-              ],
+              tabs: tabs,
             ),
           ),
           body: TabBarView(
-            children: [
-              DeviceCerts(path: cerRes.systemTrustedCertsPath), 
-              DeviceCerts(path: cerRes.userTrustedCertsPath),
-            ],
+            children: bodies,
           )
         ),
       ),
@@ -55,7 +62,7 @@ class DeviceCerts extends StatelessWidget {
     } else if (Platform.isWindows) {
       finder = WindowsCertificateFinder();
     }
-    var certs = finder.getSystemRootCerts();
+    var certs = finder.getCertsByStore(path);
     return ListView.builder(
       itemCount: certs.length,
       itemBuilder: (context, i) {

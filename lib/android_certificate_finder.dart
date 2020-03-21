@@ -15,8 +15,8 @@ class AndroidCertificateFinder implements CertificateFinder {
   List<X509Certificate> certs = [];
 
   @override
-  List<X509Certificate> getSystemRootCerts() {
-    var certsDir = new Directory(systemTrustedCertsPath);
+  List<X509Certificate> getCertsByStore(String storePath) {
+    var certsDir = new Directory(storePath);
     List<FileSystemEntity> certsList =
         certsDir.listSync(recursive: false, followLinks: false);
 
@@ -79,5 +79,10 @@ class AndroidCertificateFinder implements CertificateFinder {
     certs.forEach((cert) {
       verify(cert);
     });
+  }
+
+  @override
+  Map<String, String> getCertStores() {
+    return {'System Root Certificates': systemTrustedCertsPath};
   }
 }

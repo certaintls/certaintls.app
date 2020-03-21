@@ -10,15 +10,16 @@ import 'package:http/http.dart';
 class MacOSCertificateFinder implements CertificateFinder {
   List<X509Certificate> certs;
   static String systemTrustedCertsPath = '/System/Library/Keychains/SystemRootCertificates.keychain';
+  static String userInstalledCertsPath = '/Library/Keychains/System.keychain';
   static String delimiter = '-----END CERTIFICATE-----\n';
   static String appleCurrentTrustedStore = 'https://support.apple.com/en-us/HT210770';
   List<AppleCertificateInfo> onlineCerts;
   final _closeMemo = new AsyncMemoizer();
 
   @override
-  List<X509Certificate> getSystemRootCerts() {
+  List<X509Certificate> getCertsByStore(String storePath) {
     List<X509Certificate> certs = [];
-    ProcessResult results = Process.runSync('security', ['find-certificate', '-pa', systemTrustedCertsPath]);
+    ProcessResult results = Process.runSync('security', ['find-certificate', '-pa', storePath]);
     String output = results.stdout as String;
     output.split(delimiter).forEach((pem) {
       if (pem.startsWith('-----BEGIN CERTIFICATE-----')) {
@@ -81,6 +82,11 @@ class MacOSCertificateFinder implements CertificateFinder {
       certs.add(AppleCertificateInfo(element.text.trim(), issuers[i].text.trim(), fingerprints[i].text.trim()));
     });
     return certs;
+  }
+
+  @override
+  Map<String, String> getCertStores() {
+    return {'System Root Certificates': systemTrustedCertsPath, 'User Installed Certificates': userInstalledCertsPath};
   }
 }
 
