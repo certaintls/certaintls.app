@@ -10,6 +10,7 @@ import 'package:http/http.dart';
 class WindowsCertificateFinder implements CertificateFinder {
   List<X509Certificate> certs;
   static String systemTrustedCertsPath = 'Root';
+  static String userInstalledCertsPath = '-user My';
   static RegExp delimiter = RegExp(r'================ Certificate \d* ================');
   static String microsoftCurrentTrustedStore =
       'https://ccadb-public.secure.force.com/microsoft/IncludedCACertificateReportForMSFT';
@@ -108,14 +109,14 @@ class WindowsCertificateFinder implements CertificateFinder {
 
   @override
   Map<String, String> getCertStores() {
-    return {'System Root Certificates': systemTrustedCertsPath};
+    return {'System Root Certificates': systemTrustedCertsPath, 'User Installed Certificates': userInstalledCertsPath};
   }
 
   String tokenize(String text, String label) {
     int pos = text.indexOf(label);
     if (pos > 0) {
       int l = label.length;
-      return text.substring(pos+l, text.indexOf('\n', pos));
+      return text.substring(pos+l, text.indexOf('\n', pos)).trim();
     }
     return null;
   }
