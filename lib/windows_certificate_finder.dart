@@ -10,7 +10,7 @@ import 'package:http/http.dart';
 class WindowsCertificateFinder implements CertificateFinder {
   List<X509Certificate> certs;
   static String systemTrustedCertsPath = 'Root';
-  static String userInstalledCertsPath = '-user My';
+  static String userInstalledCertsPath = 'My';
   static RegExp delimiter = RegExp(r'================ Certificate \d* ================');
   static String microsoftCurrentTrustedStore =
       'https://ccadb-public.secure.force.com/microsoft/IncludedCACertificateReportForMSFT';
@@ -20,8 +20,13 @@ class WindowsCertificateFinder implements CertificateFinder {
   @override
   List<X509Certificate> getCertsByStore(String storePath) {
     List<X509Certificate> certs = [];
-    ProcessResult results = Process.runSync(
-        'CertUtil', ['-v', '-store', storePath]);
+    ProcessResult results;
+    if (storePath == userInstalledCertsPath) {
+      results = Process.runSync('CertUtil', ['-v', '-store', '-user', storePath]);
+    } else {
+      results = Process.runSync('CertUtil', ['-v', '-store', storePath]);
+    }
+
     String output = results.stdout as String;
     var outputSplitted = output.split(delimiter);
     outputSplitted.forEach((s) {
