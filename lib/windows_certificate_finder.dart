@@ -10,7 +10,7 @@ import 'package:http/http.dart';
 class WindowsCertificateFinder implements CertificateFinder {
   List<X509Certificate> certs;
   static String systemTrustedCertsPath = 'Root';
-  static String delimiter = '-----END CERTIFICATE-----\n';
+  static RegExp delimiter = RegExp(r'================ Certificate \d* ================');
   static String microsoftCurrentTrustedStore =
       'https://ccadb-public.secure.force.com/microsoft/IncludedCACertificateReportForMSFT';
   List<MicroSoftCertificateInfo> onlineCerts;
@@ -22,10 +22,20 @@ class WindowsCertificateFinder implements CertificateFinder {
     ProcessResult results = Process.runSync(
         'CertUtil', ['-v', '-store', storePath]);
     String output = results.stdout as String;
-    output.split(delimiter).forEach((pem) {
-      if (pem.startsWith('-----BEGIN CERTIFICATE-----')) {
-        X509CertificateData data =
-            X509Utils.x509CertificateFromPem(pem + delimiter);
+    var outputSplitted = output.split(delimiter);
+    outputSplitted.forEach((s) {
+      s = s.trim();
+      if (s.startsWith('X509 Certificate:')) {
+        var subject = <String, String>{};
+        subject.putIfAbsent('2.5.4.3', () => tokenize(s, 'CN='));
+        subject.putIfAbsent('2.5.4.10', () => tokenize(s, 'O='));
+        subject.putIfAbsent('2.5.4.11', () => tokenize(s, 'OU='));
+        subject.putIfAbsent('2.5.4.6', () => tokenize(s, ' C='));
+        X509CertificateData data = X509CertificateData(
+          sha1Thumbprint: tokenize(s, 'Cert Hash(sha1): ').toUpperCase(),
+          sha256Thumbprint: tokenize(s, 'Cert Hash(sha256): ').toUpperCase(),
+          subject: subject,
+        );
         certs.add(X509Certificate(data: data));
       }
     });
@@ -41,13 +51,13 @@ class WindowsCertificateFinder implements CertificateFinder {
     });
 
     bool match = false;
-    onlineCerts.forEach((remoteCert) {
+    onlineCerts.forEach((onlineCert) {
       String commonName = cert.data.subject['2.5.4.3'] != null
           ? cert.data.subject['2.5.4.3']
           : (cert.data.subject['2.5.4.11'] ?? '');
-      if (remoteCert.commonName == commonName) {
+      if (onlineCert.commonName == commonName) {
         match = true;
-        if (remoteCert.fingerprint == cert.data.sha1Thumbprint) {
+        if (onlineCert.fingerprint == cert.data.sha1Thumbprint) {
           cert.status = X509CertificateStatus.statusVerified;
         } else
           cert.status = X509CertificateStatus.statusCompromised;
@@ -99,6 +109,15 @@ class WindowsCertificateFinder implements CertificateFinder {
   @override
   Map<String, String> getCertStores() {
     return {'System Root Certificates': systemTrustedCertsPath};
+  }
+
+  String tokenize(String text, String label) {
+    int pos = text.indexOf(label);
+    if (pos > 0) {
+      int l = label.length;
+      return text.substring(pos+l, text.indexOf('\n', pos));
+    }
+    return null;
   }
 }
 
