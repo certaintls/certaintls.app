@@ -37,15 +37,15 @@ class MacOSCertificateFinder implements CertificateFinder {
        await getRemoteTrustedStore();
     });
 
-    String commonName = cert.data.subject['2.5.4.3'] != null ? cert.data.subject['2.5.4.3'] : (cert.data.subject['2.5.4.11'] ?? '');
+    String certName = CertificateFinder.getCertName(cert.data);
     // Add spaces
     String prettyPrint = StringUtils.addCharAtPosition(cert.data.sha256Thumbprint, ' ', 2, repeat: true);
-    // 1. Check if any hash matches
+    // 1. Check if any cert hash matches
     int i = onlineCerts.indexWhere((onlineCert) => onlineCert.certFingerPrint == prettyPrint);
     if (i != -1 ) { // There is a match
       cert.status = X509CertificateStatus.statusVerified;
       // 2. If a name matches
-    } else if ((onlineCerts.indexWhere((onlineCert) => onlineCert.name == commonName)) != -1) {
+    } else if ((onlineCerts.indexWhere((onlineCert) => onlineCert.name == certName)) != -1) {
         cert.status = X509CertificateStatus.statusCompromised;
         // 3. Can't find any matches
     } else cert.status = X509CertificateStatus.statusUnverifiable;

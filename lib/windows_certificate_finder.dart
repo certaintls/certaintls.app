@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:async/async.dart';
 import 'package:basic_utils/basic_utils.dart';
@@ -6,20 +7,20 @@ import 'package:certaintls/x509certificate.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart';
+import 'package:pem/pem.dart';
 
 class WindowsCertificateFinder implements CertificateFinder {
-  List<X509Certificate> certs;
+  List<X509Certificate> certs = [];
   static String systemTrustedCertsPath = 'Root';
   static String userInstalledCertsPath = 'My';
   static RegExp delimiter = RegExp(r'================ Certificate \d* ================');
   static String microsoftCurrentTrustedStore =
       'https://ccadb-public.secure.force.com/microsoft/IncludedCACertificateReportForMSFT';
-  List<MicroSoftCertificateInfo> onlineCerts;
+  List<MicroSoftCertificateInfo> onlineCerts = [];
   final _closeMemo = new AsyncMemoizer();
 
   @override
   List<X509Certificate> getCertsByStore(String storePath) {
-    List<X509Certificate> certs = [];
     ProcessResult results;
     if (storePath == userInstalledCertsPath) {
       results = Process.runSync('CertUtil', ['-v', '-store', '-user', storePath]);
@@ -56,34 +57,36 @@ class WindowsCertificateFinder implements CertificateFinder {
       await getRemoteTrustedStore();
     });
 
-    bool match = false;
-    onlineCerts.forEach((onlineCert) {
-      String commonName = cert.data.subject['2.5.4.3'] != null
-          ? cert.data.subject['2.5.4.3']
-          : (cert.data.subject['2.5.4.11'] ?? '');
-      if (onlineCert.commonName == commonName) {
-        match = true;
-        if (onlineCert.fingerprint == cert.data.sha1Thumbprint) {
+    String certName = CertificateFinder.getCertName(cert.data);
+    // 1. Check if any cert hash matches
+    int i = onlineCerts.indexWhere((onlineCert) => onlineCert.fingerprint == cert.data.sha256Thumbprint);
+    if (i != -1 ) { // There is a match
+      cert.status = X509CertificateStatus.statusVerified;
+      // 2. If a name matches
+    } else if ((onlineCerts.indexWhere((onlineCert) => onlineCert.commonName == certName)) != -1) {
+        // 3. Download the cert file and check SPKI hash
+        i = onlineCerts.indexWhere((onlineCert) => onlineCert.commonName == certName);
+        X509CertificateData data;
+        if (onlineCerts[i].data == null) {
+          data = await _downloadCert(onlineCerts[i].fileUrl);
+        }
+        if (data.publicKeyData.sha256Thumbprint == cert.data.publicKeyData.sha256Thumbprint) {
           cert.status = X509CertificateStatus.statusVerified;
-        } else
-          cert.status = X509CertificateStatus.statusCompromised;
-      }
-    });
+        } else cert.status = X509CertificateStatus.statusCompromised;
+      // 4. Can't find any matches
+    } else cert.status = X509CertificateStatus.statusUnverifiable;
 
-    if (!match && cert.status == X509CertificateStatus.statusUnchecked) {
-      cert.status = X509CertificateStatus.statusUnverifiable;
-    }
     return true;
   }
 
   @override
   Future verifyAll() async {
-    certs.forEach((cert) async {
+    await Future.forEach(certs, (cert) async {
       await verify(cert);
     });
   }
 
-  Future getRemoteTrustedStore() async {
+  Future getRemoteTrustedStore({bool download = false}) async {
     var client = Client();
     Response response = await client.get(microsoftCurrentTrustedStore);
 
@@ -95,21 +98,19 @@ class WindowsCertificateFinder implements CertificateFinder {
     caOwners.removeLast();
     List<Element> commonNames =
         document.querySelectorAll('.slds-table tr > td:nth-child(3)');
-    List<Element> sha1Fingerprints =
-        document.querySelectorAll('.slds-table tr > td:nth-child(5)');
-    onlineCerts = _buildList(caOwners, commonNames, sha1Fingerprints);
-  }
+    List<Element> fileUrls = document.querySelectorAll('.slds-table tr > td:nth-child(7)');
 
-  List<MicroSoftCertificateInfo> _buildList(List<Element> caOwners,
-      List<Element> commonNames, List<Element> fingerprints) {
-    List<MicroSoftCertificateInfo> certs = [];
-    caOwners.asMap().forEach((i, element) {
-      certs.add(MicroSoftCertificateInfo(
-          element.querySelector('span').text,
-          commonNames[i].querySelector('span').text,
-          fingerprints[i].querySelector('span').text));
-    });
-    return certs;
+    for (int i = 0; i < caOwners.length; i++) {
+      String caOwner = caOwners[i].querySelector('span').text;
+      String commonName = commonNames[i].querySelector('span').text;
+      String sha256 = fileUrls[i].querySelector('a').text;
+      String url = fileUrls[i].querySelector('a').attributes['href'];
+      X509CertificateData data;
+      if (download) {
+        data = await _downloadCert(url, client: client);
+      }
+      onlineCerts.add(MicroSoftCertificateInfo(caOwner, commonName, sha256, url, data));
+    }
   }
 
   @override
@@ -125,12 +126,28 @@ class WindowsCertificateFinder implements CertificateFinder {
     }
     return null;
   }
+
+  Future<X509CertificateData> _downloadCert(String url, {Client client}) async {
+    if (client == null) {
+      client = Client();
+    }
+    var response = await client.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      var bytes = response.bodyBytes;
+      String encoded = utf8.decode(bytes);
+      List<int> certData = PemCodec(PemLabel.certificate).decode(encoded);
+      String onlinePEM = PemCodec(PemLabel.certificate).encode(certData);
+      return X509Utils.x509CertificateFromPem(onlinePEM);
+    }
+  }
 }
 
 class MicroSoftCertificateInfo {
   String caOwner;
   String commonName;
-  // SHA-1 Fingerprint
+  // SHA-256 Fingerprint
   String fingerprint;
-  MicroSoftCertificateInfo(this.caOwner, this.commonName, this.fingerprint);
+  String fileUrl;
+  X509CertificateData data;
+  MicroSoftCertificateInfo(this.caOwner, this.commonName, this.fingerprint, this.fileUrl, this.data);
 }
