@@ -37,22 +37,19 @@ class MacOSCertificateFinder implements CertificateFinder {
        await getRemoteTrustedStore();
     });
 
-    bool match = false;
-    onlineCerts.forEach((remoteCert) {
-      String commonName = cert.data.subject['2.5.4.3'] != null ? cert.data.subject['2.5.4.3'] : (cert.data.subject['2.5.4.11'] ?? '');
-      if (remoteCert.name == commonName) {
-        match = true;
-        // Add spaces
-        String prettyPrint = StringUtils.addCharAtPosition(cert.data.sha256Thumbprint, ' ', 2, repeat: true);
-        if (remoteCert.certFingerPrint == prettyPrint) {
-          cert.status = X509CertificateStatus.statusVerified;
-        } else cert.status = X509CertificateStatus.statusCompromised;
-      }
-    });
+    String commonName = cert.data.subject['2.5.4.3'] != null ? cert.data.subject['2.5.4.3'] : (cert.data.subject['2.5.4.11'] ?? '');
+    // Add spaces
+    String prettyPrint = StringUtils.addCharAtPosition(cert.data.sha256Thumbprint, ' ', 2, repeat: true);
+    // 1. Check if any hash matches
+    int i = onlineCerts.indexWhere((onlineCert) => onlineCert.certFingerPrint == prettyPrint);
+    if (i != -1 ) { // There is a match
+      cert.status = X509CertificateStatus.statusVerified;
+      // 2. If a name matches
+    } else if ((onlineCerts.indexWhere((onlineCert) => onlineCert.name == commonName)) != -1) {
+        cert.status = X509CertificateStatus.statusCompromised;
+        // 3. Can't find any matches
+    } else cert.status = X509CertificateStatus.statusUnverifiable;
 
-    if (!match && cert.status == X509CertificateStatus.statusUnchecked) {
-      cert.status = X509CertificateStatus.statusUnverifiable;
-    }
     return true;
   }
 
