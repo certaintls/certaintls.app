@@ -35,7 +35,7 @@ class MacOSCertificateFinder implements CertificateFinder {
   Future<bool> verify(X509Certificate cert) async {
     // Only run once
     await _closeMemo.runOnce(() async {
-       await getTrustedStore();
+       await getRemoteTrustedStore();
     });
 
     bool match = false;
@@ -58,13 +58,13 @@ class MacOSCertificateFinder implements CertificateFinder {
   }
 
   @override
-  void verifyAll() {
-    certs.forEach((cert) {
-      verify(cert);
+  void verifyAll() async {
+    await Future.forEach(certs, (cert) async {
+      await verify(cert);
     });
   }
 
-  Future getTrustedStore() async {
+  Future getRemoteTrustedStore() async {
     var client = Client();
     Response response = await client.get(appleCurrentTrustedStore);
 

@@ -53,7 +53,7 @@ class WindowsCertificateFinder implements CertificateFinder {
   Future<bool> verify(X509Certificate cert) async {
     // Only run once
     await _closeMemo.runOnce(() async {
-      await getTrustedStore();
+      await getRemoteTrustedStore();
     });
 
     bool match = false;
@@ -77,13 +77,13 @@ class WindowsCertificateFinder implements CertificateFinder {
   }
 
   @override
-  void verifyAll() {
-    certs.forEach((cert) {
-      verify(cert);
+  Future verifyAll() async {
+    certs.forEach((cert) async {
+      await verify(cert);
     });
   }
 
-  Future getTrustedStore() async {
+  Future getRemoteTrustedStore() async {
     var client = Client();
     Response response = await client.get(microsoftCurrentTrustedStore);
 
