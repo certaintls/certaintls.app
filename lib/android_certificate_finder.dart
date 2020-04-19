@@ -75,9 +75,9 @@ class AndroidCertificateFinder implements CertificateFinder {
   }
 
   @override
-  void verifyAll() {
-    certs.forEach((cert) {
-      verify(cert);
+  Future verifyAll() async {
+    await Future.forEach(certs, (cert) async {
+      await verify(cert);
     });
   }
 

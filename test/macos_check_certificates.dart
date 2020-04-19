@@ -6,7 +6,8 @@ void main() {
   test('Check MacOS stock CA root certificates', () async {
     var finder = MacOSCertificateFinder();
     finder.getCertsByStore(MacOSCertificateFinder.systemTrustedCertsPath);
-    finder.verifyAll();
+    await finder.verifyAll();
+    expect(finder.certs.length, finder.onlineCerts.length);
     finder.certs.forEach((cert) { 
       expect(cert.status, X509CertificateStatus.statusVerified);
     });

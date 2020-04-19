@@ -4,6 +4,6 @@ abstract class CertificateFinder {
 
   List<X509Certificate> getCertsByStore(String storePath);
   Future<bool> verify(X509Certificate cert);
-  void verifyAll();
+  Future verifyAll();
   Map<String, String> getCertStores();
 }
