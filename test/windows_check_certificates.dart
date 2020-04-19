@@ -1,3 +1,5 @@
+@Timeout(const Duration(seconds: 1800))
+
 import 'package:certaintls/windows_certificate_finder.dart';
 import 'package:certaintls/x509certificate.dart';
 import 'package:test/test.dart';

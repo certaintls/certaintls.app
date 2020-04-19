@@ -138,7 +138,7 @@ class WindowsCertificateFinder implements CertificateFinder {
       List<int> certData = PemCodec(PemLabel.certificate).decode(encoded);
       String onlinePEM = PemCodec(PemLabel.certificate).encode(certData);
       return X509Utils.x509CertificateFromPem(onlinePEM);
-    }
+    } else return null;
   }
 }
 
