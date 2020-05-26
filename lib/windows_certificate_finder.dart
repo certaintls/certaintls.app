@@ -10,7 +10,7 @@ import 'package:http/http.dart';
 import 'package:pem/pem.dart';
 
 class WindowsCertificateFinder implements CertificateFinder {
-  List<X509Certificate> certs = [];
+  List<X509Certificate> localCerts = [];
   static String systemTrustedCertsPath = 'Root';
   static String userInstalledCertsPath = 'My';
   static RegExp delimiter = RegExp(r'================ Certificate \d* ================');
@@ -43,11 +43,11 @@ class WindowsCertificateFinder implements CertificateFinder {
           sha256Thumbprint: tokenize(s, 'Cert Hash(sha256): ').toUpperCase(),
           subject: subject,
         );
-        certs.add(X509Certificate(data: data));
+        localCerts.add(X509Certificate(data: data));
       }
     });
 
-    return certs;
+    return localCerts;
   }
 
   @override
@@ -81,7 +81,7 @@ class WindowsCertificateFinder implements CertificateFinder {
 
   @override
   Future verifyAll() async {
-    await Future.forEach(certs, (cert) async {
+    await Future.forEach(localCerts, (cert) async {
       await verify(cert);
     });
   }
@@ -109,7 +109,9 @@ class WindowsCertificateFinder implements CertificateFinder {
       if (download) {
         data = await _downloadCert(url, client: client);
       }
-      onlineCerts.add(MicroSoftCertificateInfo(caOwner, commonName, sha256, url, data));
+      if (data != null) {
+        onlineCerts.add(MicroSoftCertificateInfo(caOwner, commonName, sha256, url, data));
+      }
     }
   }
 

@@ -6,6 +6,7 @@ import 'package:certaintls/macos_certificate_finder.dart';
 import 'package:certaintls/verifier_widget.dart';
 import 'package:certaintls/windows_certificate_finder.dart';
 import 'package:flutter/material.dart';
+import 'x509certificate.dart';
 
 void main() => runApp(MyApp());
 
@@ -71,15 +72,8 @@ class DeviceCerts extends StatelessWidget {
         String country;
         String commonName;
         try {
-          // If commone name is missing, use the org unit
-          commonName = data.subject['2.5.4.3'] != null ? data.subject['2.5.4.3'] : (data.subject['2.5.4.11'] ?? '');
-          // If org is missing, use the common name
-          if (data.subject['2.5.4.10'] == null) {
-            org = commonName;
-            commonName = '';
-          } else {
-            org = data.subject['2.5.4.10'];
-          }
+          commonName = getCommonName(data);
+          org = getOrg(data);
           country = data.subject['2.5.4.6'] != null ? ' (' + data.subject['2.5.4.6']+ ')' : '';
           return ListTile(leading: VerifierWidget(cert: certs[i], finder: finder), title: Text(org + country), subtitle: Text(commonName));
         } catch (e) {

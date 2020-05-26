@@ -149,7 +149,7 @@ Cert Hash(sha1): b1 bc 96 8b d4 f4 9d 62 2a a8 9a 81 f2 15 01 52 a4 1d 82 9c
     subject.putIfAbsent('2.5.4.6', () => 'BE');
     X509CertificateData data = X509CertificateData(
       version: 3,
-      sha1Thumbprint: 'b1bc968bd4f49d622aa89a81f2150152a41d829c'.toUpperCase(),
+      sha256Thumbprint: 'b1bc968bd4f49d622aa89a81f2150152a41d829c'.toUpperCase(),
       subject: subject,
     );
 
