@@ -11,7 +11,7 @@ import 'package:certaintls/drupal_util.dart';
 void main() async {
   await DotEnv().load('.env');
   bool uploadToDrupal = false;
-  final baseUrl = Uri.parse(DotEnv().env['BASE_URL'];
+  final baseUrl = Uri.parse(DotEnv().env['BASE_URL']);
   if (baseUrl != null) {
     uploadToDrupal = true;
   }
@@ -23,7 +23,6 @@ void main() async {
   test('Check Windows stock CA root certificates', () async {
     var finder = WindowsCertificateFinder();
     finder.getCertsByStore(WindowsCertificateFinder.systemTrustedCertsPath);
-    await finder.getRemoteTrustedStore(download: true);
     await finder.verifyAll();
     print('The number of root certificates found: ' + finder.localCerts.length.toString());
     print("The number of root certificates on Microsoft's website: " + finder.onlineCerts.length.toString());

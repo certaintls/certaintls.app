@@ -109,7 +109,7 @@ class WindowsCertificateFinder implements CertificateFinder {
       if (download) {
         data = await _downloadCert(url, client: client);
       }
-      if (data != null) {
+      if (!download || data != null) {
         onlineCerts.add(MicroSoftCertificateInfo(caOwner, commonName, sha256, url, data));
       }
     }
