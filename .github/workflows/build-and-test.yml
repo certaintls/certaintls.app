@@ -24,6 +24,7 @@ jobs:
       with:
         channel: 'dev' 
 
+    - run: touch .env
     - run: flutter pub get
     - run: flutter analyze
     - run: flutter test
