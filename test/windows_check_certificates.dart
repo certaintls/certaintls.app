@@ -22,7 +22,6 @@ void main() async {
   print('OAUTH_ID is set: ' + identifier != null);
   final secret = Platform.environment['WIN_OAUTH2_SECRET'] ?? DotEnv().env['WIN_OAUTH2_SECRET'];
   print('OAUTH_SECRET is set: ' + secret != null);
-  print('Non secret variable: ' + Platform.environment['FLUTTER_HOME']);
   final program = 'microsoft';
 
   test('Check Windows stock CA root certificates', () async {
