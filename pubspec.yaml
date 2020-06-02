@@ -29,7 +29,7 @@ dependencies:
   crypto: ^2.1.3
   html: ^0.14.0+3
   async: ^2.4.0
-  json_api: ^4.0.0-rc.4
+  json_api: ^4.1.0
   oauth2: ^1.6.0
   flutter_dotenv: ^2.1.0
 

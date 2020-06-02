@@ -11,24 +11,32 @@ import 'package:certaintls/drupal_util.dart';
 void main() async {
   await DotEnv().load('.env');
   bool uploadToDrupal = false;
-  final baseUrl = Uri.parse(DotEnv().env['BASE_URL']);
+  final String baseUrl = DotEnv().env['BASE_URL'] ?? 'https://certaintls.app';
+  final bool ignoreLocalCerts = (DotEnv().env['IGNORE_WINDOWS_LOCAL_CERTS'] ?? false) == 'true';
   if (baseUrl != null) {
     uploadToDrupal = true;
   }
-  final authorizationEndpoint = Uri.parse(DotEnv().env['BASE_URL'] + drupalEndpoints['oauth2_token']);
-  final identifier = DotEnv().env['OAUTH2_ID'];
-  final secret = DotEnv().env['OAUTH2_SECRET'];
+  final authorizationEndpoint = Uri.parse(baseUrl + drupalEndpoints['oauth2_token']);
+  final identifier = String.fromEnvironment('WIN_OAUTH2_ID', defaultValue: DotEnv().env['WIN_OAUTH2_ID']);
+  final secret = String.fromEnvironment('WIN_OAUTH2_SECRET', defaultValue: DotEnv().env['WIN_OAUTH2_SECRET']);
   final program = 'microsoft';
 
   test('Check Windows stock CA root certificates', () async {
     var finder = WindowsCertificateFinder();
-    finder.getCertsByStore(WindowsCertificateFinder.systemTrustedCertsPath);
-    await finder.verifyAll();
-    print('The number of root certificates found: ' + finder.localCerts.length.toString());
+    if (!ignoreLocalCerts) {
+      finder.getCertsByStore(WindowsCertificateFinder.systemTrustedCertsPath);
+      await finder.verifyAll();
+      print('The number of root certificates found: ' + finder.localCerts.length.toString());
+      finder.localCerts.forEach((cert) {
+        if (cert.status != X509CertificateStatus.statusVerified) {
+          print(cert.data.subject.toString() + "'s status is: " + cert.status);
+        }
+      });
+    } else {
+      await finder.getRemoteTrustedStore(download:true);
+    }
     print("The number of root certificates on Microsoft's website: " + finder.onlineCerts.length.toString());
-    finder.localCerts.forEach((cert) {
-      expect(cert.status, X509CertificateStatus.statusVerified, reason: cert.data.subject.toString() + "'s status is: " + cert.status);
-    });
+    
     if (uploadToDrupal) {
       // https://pub.dev/documentation/json_api/latest/client/JsonApiClient-class.html
       var httpClient = await clientCredentialsGrant(
@@ -36,13 +44,12 @@ void main() async {
       var httpHandler = DartHttp(httpClient);
       var jsonApiClient = JsonApiClient(httpHandler);
       int total = 0;
-      finder.onlineCerts.forEach((cert) async {
-        bool sucess = await createCertResource(cert.data, jsonApiClient, program, isTrustworthy: true, isStock: true);
+      Future.forEach(finder.onlineCerts, (cert) async {
+        bool sucess = await createCertResource(cert.data, jsonApiClient, baseUrl, program, isTrustworthy: true, isStock: true);
         if (sucess) {
           total++;
         }
-      });
-      print('The total number of certificates created from $program program is: $total');
+      }).then((value) => print('The total number of certificates created from $program program is: $total'));
     }
   });
 }

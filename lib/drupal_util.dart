@@ -1,6 +1,5 @@
 import 'package:basic_utils/basic_utils.dart';
 import 'package:certaintls/x509certificate.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:json_api/client.dart';
 import 'package:json_api/document.dart';
 
@@ -10,8 +9,8 @@ final drupalEndpoints = <String, String>{
   'device': '/jsonapi/user/user',
 };
 
-Future<bool> createCertResource(X509CertificateData certData, JsonApiClient jsonApiClient, String program, {bool isTrustworthy = false, bool isStock = false}) async {
-  final url = Uri.parse(DotEnv().env['BASE_URL'] + drupalEndpoints['certificate']);
+Future<bool> createCertResource(X509CertificateData certData, JsonApiClient jsonApiClient, String baseUrl, String program, {bool isTrustworthy = false, bool isStock = false}) async {
+  final url = Uri.parse(baseUrl + drupalEndpoints['certificate']);
   var resource = constructCertRes(certData, program, isTrustworthy, isStock);
   jsonApiClient.createResourceAt(url, resource)
   .then((result) {
