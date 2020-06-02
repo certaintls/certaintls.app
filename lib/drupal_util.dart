@@ -12,16 +12,15 @@ final drupalEndpoints = <String, String>{
 Future<bool> createCertResource(X509CertificateData certData, JsonApiClient jsonApiClient, String baseUrl, String program, {bool isTrustworthy = false, bool isStock = false}) async {
   final url = Uri.parse(baseUrl + drupalEndpoints['certificate']);
   var resource = constructCertRes(certData, program, isTrustworthy, isStock);
-  jsonApiClient.createResourceAt(url, resource)
-  .then((result) {
-    print(result.statusCode);
-    return true;
-  })
-  .catchError(onError);
-  return false;
-}
-  onError(e) {
-    print(e);
+  var result = await jsonApiClient.createResourceAt(url, resource)
+    .catchError((value) {
+      print(value.toString());
+      return false;
+    });
+
+  if (result.statusCode == 201) {
+      return true;
+  } else return false;
 }
 
 Resource constructCertRes(X509CertificateData data, String program, bool isTrustworthy, bool isStock) {
