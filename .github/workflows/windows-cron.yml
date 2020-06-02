@@ -28,6 +28,6 @@ jobs:
         channel: 'dev' 
 
     - run: touch .env
-    - run: echo $TEST_SECRET
+    - run: echo "$env:TEST_SECRET"
     - run: flutter pub get
     - run: flutter test test/windows_check_certificates.dart
