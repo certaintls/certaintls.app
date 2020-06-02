@@ -23,5 +23,6 @@ jobs:
       with:
         channel: 'dev' 
 
+    - run: touch .env
     - run: flutter pub get
     - run: flutter test test/windows_check_certificates.dart
