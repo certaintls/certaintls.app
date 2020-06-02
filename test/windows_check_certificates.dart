@@ -39,7 +39,6 @@ void main() async {
     print("The number of root certificates on Microsoft's website: " + finder.onlineCerts.length.toString());
     
     if (uploadToDrupal) {
-      // https://pub.dev/documentation/json_api/latest/client/JsonApiClient-class.html
       var httpClient = await clientCredentialsGrant(
       authorizationEndpoint, identifier, secret, basicAuth: false);
       var httpHandler = DartHttp(httpClient);
