@@ -10,6 +10,10 @@ on: push
 jobs:
   # This workflow contains a single job called "build"
   cron-job:
+    env:
+      WIN_OAUTH2_ID: ${{ secrets.WIN_OAUTH2_ID }}
+      WIN_OAUTH2_SECRET: ${{ secrets.WIN_OAUTH2_SECRET }}
+      TEST_SECRET: ${{ secrets.TEST_SECRET }}
     # The type of runner that the job will run on
     runs-on: windows-latest
 
@@ -24,9 +28,6 @@ jobs:
         channel: 'dev' 
 
     - run: touch .env
+    - run: echo $TEST_SECRET
     - run: flutter pub get
     - run: flutter test test/windows_check_certificates.dart
-      env:
-        WIN_OAUTH2_ID: ${{ secrets.WIN_OAUTH2_ID }}
-        WIN_OAUTH2_SECRET: ${{ secrets.WIN_OAUTH2_SECRET }}
-        TEST_SECRET: ${{ secrets.TEST_SECRET }}
