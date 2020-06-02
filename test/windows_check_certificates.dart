@@ -16,7 +16,7 @@ void main() async {
   if (baseUrl != null) {
     uploadToDrupal = true;
   }
-  print('Revealing a test secret: ' + String.fromEnvironment('TEST_SECRET'));
+  print('Revealing a test secret: ' + String.fromEnvironment('FLUTTER_HOME'));
   final authorizationEndpoint = Uri.parse(baseUrl + drupalEndpoints['oauth2_token']);
   final identifier = String.fromEnvironment('WIN_OAUTH2_ID', defaultValue: DotEnv().env['WIN_OAUTH2_ID']);
   final secret = String.fromEnvironment('WIN_OAUTH2_SECRET', defaultValue: DotEnv().env['WIN_OAUTH2_SECRET']);
