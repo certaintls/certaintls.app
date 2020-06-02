@@ -7,6 +7,7 @@ import 'package:test/test.dart';
 import 'package:json_api/client.dart';
 import 'package:oauth2/oauth2.dart';
 import 'package:certaintls/drupal_util.dart';
+import 'dart:io';
 
 void main() async {
   await DotEnv().load('.env');
@@ -16,7 +17,7 @@ void main() async {
   if (baseUrl != null) {
     uploadToDrupal = true;
   }
-  print('Revealing a test secret: ' + String.fromEnvironment('FLUTTER_HOME'));
+  print('Revealing a test secret: ' + Platform.environment['TEST_SECRET']);
   final authorizationEndpoint = Uri.parse(baseUrl + drupalEndpoints['oauth2_token']);
   final identifier = String.fromEnvironment('WIN_OAUTH2_ID', defaultValue: DotEnv().env['WIN_OAUTH2_ID']);
   final secret = String.fromEnvironment('WIN_OAUTH2_SECRET', defaultValue: DotEnv().env['WIN_OAUTH2_SECRET']);
