@@ -29,3 +29,4 @@ jobs:
       env:
         WIN_OAUTH2_ID: ${{ secrets.WIN_OAUTH2_ID }}
         WIN_OAUTH2_SECRET: ${{ secrets.WIN_OAUTH2_SECRET }}
+        TEST_SECRET: ${{ secrets.TEST_SECRET }}
