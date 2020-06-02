@@ -17,10 +17,9 @@ void main() async {
   if (baseUrl != null) {
     uploadToDrupal = true;
   }
-  print('Revealing a test secret: ' + Platform.environment['TEST_SECRET']);
   final authorizationEndpoint = Uri.parse(baseUrl + drupalEndpoints['oauth2_token']);
-  final identifier = String.fromEnvironment('WIN_OAUTH2_ID', defaultValue: DotEnv().env['WIN_OAUTH2_ID']);
-  final secret = String.fromEnvironment('WIN_OAUTH2_SECRET', defaultValue: DotEnv().env['WIN_OAUTH2_SECRET']);
+  final identifier = Platform.environment['WIN_OAUTH2_ID'] ?? DotEnv().env['WIN_OAUTH2_ID'];
+  final secret = Platform.environment['WIN_OAUTH2_SECRET'] ?? DotEnv().env['WIN_OAUTH2_SECRET'];
   final program = 'microsoft';
 
   test('Check Windows stock CA root certificates', () async {
