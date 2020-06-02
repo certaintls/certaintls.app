@@ -18,6 +18,7 @@ class WindowsCertificateFinder implements CertificateFinder {
       'https://ccadb-public.secure.force.com/microsoft/IncludedCACertificateReportForMSFT';
   List<MicroSoftCertificateInfo> onlineCerts = [];
   final _closeMemo = new AsyncMemoizer();
+  bool downloadOnlineCert = true;
 
   @override
   List<X509Certificate> getCertsByStore(String storePath) {
@@ -86,7 +87,7 @@ class WindowsCertificateFinder implements CertificateFinder {
     });
   }
 
-  Future getRemoteTrustedStore({bool download = false}) async {
+  Future getRemoteTrustedStore() async {
     var client = Client();
     Response response = await client.get(microsoftCurrentTrustedStore);
 
@@ -106,10 +107,10 @@ class WindowsCertificateFinder implements CertificateFinder {
       String sha256 = fileUrls[i].querySelector('a').text;
       String url = fileUrls[i].querySelector('a').attributes['href'];
       X509CertificateData data;
-      if (download) {
+      if (downloadOnlineCert) {
         data = await _downloadCert(url, client: client);
       }
-      if (!download || data != null) {
+      if (!downloadOnlineCert || data != null) {
         onlineCerts.add(MicroSoftCertificateInfo(caOwner, commonName, sha256, url, data));
       }
     }
