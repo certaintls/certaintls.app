@@ -44,7 +44,7 @@ void main() async {
       var httpHandler = DartHttp(httpClient);
       var jsonApiClient = JsonApiClient(httpHandler);
       int total = 0;
-      Future.forEach(finder.onlineCerts, (cert) {
+      await Future.forEach(finder.onlineCerts, (cert) {
         Future<bool> sucess = createCertResource(cert.data, jsonApiClient, baseUrl, program, isTrustworthy: true, isStock: true);
         sucess.then((value) {
           if (value) {
