@@ -34,14 +34,17 @@ void main() async {
       var httpHandler = DartHttp(httpClient);
       jsonApiClient = JsonApiClient(httpHandler);
     }
-    await Future.forEach(finder.localCerts, (cert) async {
+    await Future.forEach(finder.localCerts, (cert) {
       if (cert.status != X509CertificateStatus.statusVerified) {
         print(cert.data.subject.toString() + "'s status is: " + cert.status);
       } else if (uploadToDrupal) {
-        bool sucess = await createCertResource(cert.data, jsonApiClient, baseUrl, program, isTrustworthy: true, isStock: true);
-        if (sucess) {
-          totalUploaded++;
-        }
+        Future<bool> sucess = createCertResource(cert.data, jsonApiClient, baseUrl, program, isTrustworthy: true, isStock: true);
+        sucess.then((value) {
+          if (value) {
+            totalUploaded++;
+          }
+        });
+        return sucess;
       }
     }).then((value) => print('The total number of certificates created from $program program is: $totalUploaded'));
   });
