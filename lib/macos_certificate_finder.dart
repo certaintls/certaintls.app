@@ -8,7 +8,7 @@ import 'package:html/parser.dart';
 import 'package:http/http.dart';
 
 class MacOSCertificateFinder implements CertificateFinder {
-  List<X509Certificate> certs = [];
+  List<X509Certificate> localCerts = [];
   static String systemTrustedCertsPath = '/System/Library/Keychains/SystemRootCertificates.keychain';
   static String userInstalledCertsPath = '/Library/Keychains/System.keychain';
   static String delimiter = '-----END CERTIFICATE-----\n';
@@ -23,11 +23,11 @@ class MacOSCertificateFinder implements CertificateFinder {
     output.split(delimiter).forEach((pem) {
       if (pem.startsWith('-----BEGIN CERTIFICATE-----')) {
         X509CertificateData data = X509Utils.x509CertificateFromPem(pem + delimiter);
-        certs.add(X509Certificate(data: data));
+        localCerts.add(X509Certificate(data: data));
       }
     });
 
-    return certs;
+    return localCerts;
   }
 
   @override
@@ -55,7 +55,7 @@ class MacOSCertificateFinder implements CertificateFinder {
 
   @override
   Future verifyAll() async {
-    await Future.forEach(certs, (cert) async {
+    await Future.forEach(localCerts, (cert) async {
       await verify(cert);
     });
   }
