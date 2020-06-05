@@ -12,7 +12,7 @@ class AndroidCertificateFinder implements CertificateFinder {
   // https://stackoverflow.com/a/35132508/1966269
   static String userTrustedCertsPath = '/data/misc/keychain/certs-added';
 
-  List<X509Certificate> certs = [];
+  List<X509Certificate> localCerts = [];
 
   @override
   List<X509Certificate> getCertsByStore(String storePath) {
@@ -26,10 +26,10 @@ class AndroidCertificateFinder implements CertificateFinder {
       List<int> certData = PemCodec(PemLabel.certificate).decode(certTxt);
       String encoded = PemCodec(PemLabel.certificate).encode(certData);
       X509CertificateData data = X509Utils.x509CertificateFromPem(encoded);
-      certs.add(X509Certificate(data: data, filename: basename(file.path)));
+      localCerts.add(X509Certificate(data: data, filename: basename(file.path)));
     });
 
-    return certs;
+    return localCerts;
   }
 
   @override
@@ -76,7 +76,7 @@ class AndroidCertificateFinder implements CertificateFinder {
 
   @override
   Future verifyAll() async {
-    await Future.forEach(certs, (cert) async {
+    await Future.forEach(localCerts, (cert) async {
       await verify(cert);
     });
   }
