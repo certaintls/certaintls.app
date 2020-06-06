@@ -12,7 +12,7 @@ import 'dart:io';
 void main() async {
   await DotEnv().load('.env');
   bool uploadToDrupal = false;
-  final String baseUrl = DotEnv().env['BASE_URL'] ?? 'https://certaintls.app';
+  final String baseUrl = DotEnv().env['BASE_URL'] ?? drupalBaseUrl;
   if (baseUrl != null) {
     uploadToDrupal = true;
   }

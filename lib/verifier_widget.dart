@@ -1,22 +1,24 @@
-import 'package:certaintls/certificate_finder.dart';
+import 'package:certaintls/certificate_verifier.dart';
 import 'package:certaintls/x509certificate.dart';
 import 'package:flutter/material.dart';
 
 class VerifierWidget extends StatefulWidget {
 
   final X509Certificate cert;
-  final CertificateFinder finder;
-  VerifierWidget({this.cert, this.finder});
+  final CertificateVerifier verifier;
+
+  VerifierWidget({this.cert, this.verifier});
+
   @override
   _VerifierWidgetState createState() =>
-      _VerifierWidgetState(cert: cert, finder: finder);
+      _VerifierWidgetState(cert: cert, verifier: verifier);
 }
 
 class _VerifierWidgetState extends State<VerifierWidget> {
   final X509Certificate cert;
-  final CertificateFinder finder;
+  final CertificateVerifier verifier;
 
-  _VerifierWidgetState({this.cert, this.finder});
+  _VerifierWidgetState({this.cert, this.verifier});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,7 @@ class _VerifierWidgetState extends State<VerifierWidget> {
   }
 
   void _verify() async {
-    await finder.verify(cert);
+    await verifier.verify(cert);
     setState(() {});
   }
 }

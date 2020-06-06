@@ -3,13 +3,14 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:basic_utils/basic_utils.dart';
 import 'package:certaintls/certificate_finder.dart';
+import 'package:certaintls/certificate_verifier.dart';
 import 'package:certaintls/x509certificate.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart';
 import 'package:pem/pem.dart';
 
-class WindowsCertificateFinder implements CertificateFinder {
+class WindowsCertificateFinder implements CertificateFinder, CertificateVerifier {
   List<X509Certificate> localCerts = [];
   static String systemTrustedCertsPath = 'Root';
   static String userInstalledCertsPath = 'My';

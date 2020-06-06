@@ -10,7 +10,7 @@ import 'dart:io';
 
 void main() async {
   await DotEnv().load('.env');
-  final String baseUrl = DotEnv().env['BASE_URL'] ?? 'https://certaintls.app';
+  final String baseUrl = DotEnv().env['BASE_URL'] ?? drupalBaseUrl;
   final authorizationEndpoint = Uri.parse(baseUrl + drupalEndpoints['oauth2_token']);
   final identifier = Platform.environment['ANDROID_OAUTH2_ID'] ?? DotEnv().env['ANDROID_OAUTH2_ID'];
   final secret = Platform.environment['ANDROID_OAUTH2_SECRET'] ?? DotEnv().env['ANDROID_OAUTH2_SECRET'];

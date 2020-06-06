@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:basic_utils/basic_utils.dart';
 import 'package:certaintls/android_certificate_finder.dart';
+import 'package:certaintls/certaintls_server_verifier.dart';
 import 'package:certaintls/certificate_finder.dart';
 import 'package:certaintls/macos_certificate_finder.dart';
 import 'package:certaintls/verifier_widget.dart';
@@ -64,6 +65,8 @@ class DeviceCerts extends StatelessWidget {
       finder = WindowsCertificateFinder();
     }
     var certs = finder.getCertsByStore(path);
+    var verifier = CertainTLSServerVerifier(certs);
+
     return ListView.builder(
       itemCount: certs.length,
       itemBuilder: (context, i) {
@@ -74,8 +77,8 @@ class DeviceCerts extends StatelessWidget {
         try {
           commonName = getCommonName(data);
           org = getOrg(data);
-          country = data.subject['2.5.4.6'] != null ? ' (' + data.subject['2.5.4.6']+ ')' : '';
-          return ListTile(leading: VerifierWidget(cert: certs[i], finder: finder), title: Text(org + country), subtitle: Text(commonName));
+          country = getCountry(data) != null ? ' (' + getCountry(data)+ ')' : '';
+          return ListTile(leading: VerifierWidget(cert: certs[i], verifier: verifier), title: Text(org + country), subtitle: Text(commonName));
         } catch (e) {
           return ListTile(title: Text(i.toString() + '- Exception:' + e.toString()));
         }

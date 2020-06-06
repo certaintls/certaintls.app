@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:basic_utils/basic_utils.dart';
 import 'package:certaintls/certificate_finder.dart';
+import 'package:certaintls/certificate_verifier.dart';
 import 'package:path/path.dart';
 import 'package:pem/pem.dart';
 import 'package:certaintls/x509certificate.dart';
 import 'package:http/http.dart';
 
-class AndroidCertificateFinder implements CertificateFinder {
+class AndroidCertificateFinder implements CertificateFinder, CertificateVerifier {
   static String systemTrustedCertsPath = '/system/etc/security/cacerts';
   // https://stackoverflow.com/a/35132508/1966269
   static String userTrustedCertsPath = '/data/misc/keychain/certs-added';

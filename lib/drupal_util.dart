@@ -3,6 +3,7 @@ import 'package:certaintls/x509certificate.dart';
 import 'package:json_api/client.dart';
 import 'package:json_api/document.dart';
 
+final String drupalBaseUrl = 'https://certaintls.app';
 final drupalEndpoints = <String, String>{
   'oauth2_token': '/oauth/token',
   'certificate': '/jsonapi/node/certificate',
