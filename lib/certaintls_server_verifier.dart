@@ -26,12 +26,14 @@ class CertainTLSServerVerifier implements CertificateVerifier {
     var result = await findCert(cert.data, jsonApiClient);
     if (result.data.collection.length == 1) {
       cert.status = X509CertificateStatus.statusVerified;
+      cert.programs = getCertPrograms(result.data.collection[0]);
       return true;
     }
     // 2. Search the SPKI fingerprint
     result = await findkey(cert.data, jsonApiClient);
     if (result.data.collection.length > 0) {
       cert.status = X509CertificateStatus.statusVerified;
+      cert.programs = getCertPrograms(result.data.collection[0]);
       return true;
     }
     cert.status = X509CertificateStatus.statusUnverifiable;

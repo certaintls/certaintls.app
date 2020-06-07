@@ -6,6 +6,7 @@ class X509Certificate {
   X509CertificateData data;
   String status = X509CertificateStatus.statusUnchecked;
   String filename;
+  List programs = [];
 
   X509Certificate({@required this.data, this.filename});
 }

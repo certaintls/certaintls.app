@@ -48,8 +48,12 @@ Future<Response<ResourceCollectionData>> findkey(X509CertificateData certData, J
 }
 
 bool certBelongProgram(ResourceObject cert, String program) {
-  List programs = cert.attributes['field_program'];
+  List programs = getCertPrograms(cert);
   return programs.contains(program);
+}
+
+List getCertPrograms(ResourceObject cert) {
+  return cert.attributes['field_program'];
 }
 
 ResourceObject certAddProgram(ResourceObject cert, String program) {

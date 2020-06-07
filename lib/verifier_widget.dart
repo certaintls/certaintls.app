@@ -17,6 +17,7 @@ class VerifierWidget extends StatefulWidget {
 class _VerifierWidgetState extends State<VerifierWidget> {
   final X509Certificate cert;
   final CertificateVerifier verifier;
+  List<String> programs;
 
   _VerifierWidgetState({this.cert, this.verifier});
 
@@ -42,9 +43,25 @@ class _VerifierWidgetState extends State<VerifierWidget> {
         iconDisplay = Icon(Icons.priority_high, color: Colors.yellow[500]);
         break;
     }
-    return IconButton(
-      icon: iconDisplay,
-      onPressed: _verify,
+    return Container(
+      width: 63,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              Padding(padding: EdgeInsets.only(bottom: 5), child: Image.asset('images/google.png', width: 12, color: cert.programs.contains('google') ? null : Colors.grey[300])),
+              Image.asset('images/microsoft.png', width: 12, color: cert.programs.contains('microsoft') ? null : Colors.grey[300]),
+              Padding(padding: EdgeInsets.only(top: 5), child: Image.asset('images/apple.png', width: 12, color: cert.programs.contains('apple') ? null : Colors.grey[300])),
+            ],
+          ),
+          IconButton(
+            icon: iconDisplay,
+            onPressed: _verify,
+          ),
+        ],
+      ),
     );
   }
 
