@@ -31,7 +31,7 @@ void main() async {
       var httpClient = await clientCredentialsGrant(authorizationEndpoint, identifier, secret, basicAuth: false);
       var httpHandler = DartHttp(httpClient);
       jsonApiClient = JsonApiClient(httpHandler);
-      syncCertsToDrupal(finder.localCerts, jsonApiClient, program, baseUrl: baseUrl);
+      await syncCertsToDrupal(finder.localCerts, jsonApiClient, program, baseUrl: baseUrl);
     }
   });
 }

@@ -66,7 +66,7 @@ Future<bool> updateCertProgram(ResourceObject resObj, JsonApiClient jsonApiClien
   } else return false;
 }
 
-void syncCertsToDrupal(Iterable<X509Certificate> localCerts, JsonApiClient jsonApiClient, String program, {String baseUrl = drupalBaseUrl, bool blindTrust = false}) async {
+Future syncCertsToDrupal(Iterable<X509Certificate> localCerts, JsonApiClient jsonApiClient, String program, {String baseUrl = drupalBaseUrl, bool blindTrust = false}) async {
   int totalUploaded =0;
   await Future.forEach(localCerts, (cert) async {
   var result = await findCert(cert.data, jsonApiClient, baseUrl: baseUrl);
