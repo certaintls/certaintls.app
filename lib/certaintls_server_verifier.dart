@@ -24,19 +24,32 @@ class CertainTLSServerVerifier implements CertificateVerifier {
   Future<bool> verify(X509Certificate cert) async {
     // 1. Search the cert fingerprint
     var result = await findCert(cert.data, jsonApiClient);
+
+
     if (result.data.collection.length == 1) {
       cert.status = X509CertificateStatus.statusVerified;
       cert.programs = getCertPrograms(result.data.collection[0]);
+      cert.isTrustworthy = isTrustwhorthy(result.data.collection[0]);
+      if (!cert.isTrustworthy) {
+        cert.status = X509CertificateStatus.statusCompromised;
+      }
       return true;
     }
     // 2. Search the SPKI fingerprint
     result = await findkey(cert.data, jsonApiClient);
     if (result.data.collection.length > 0) {
-      cert.status = X509CertificateStatus.statusVerified;
       cert.programs = getCertPrograms(result.data.collection[0]);
+      cert.isTrustworthy = isTrustwhorthy(result.data.collection[0]);
+      cert.status = X509CertificateStatus.statusVerified;
+      if (!cert.isTrustworthy) {
+        cert.status = X509CertificateStatus.statusCompromised;
+      }
       return true;
     }
+
+    // 3. Cannot find any cert.
     cert.status = X509CertificateStatus.statusUnverifiable;
+
     return true;
   }
 

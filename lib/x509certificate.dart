@@ -7,6 +7,7 @@ class X509Certificate {
   String status = X509CertificateStatus.statusUnchecked;
   String filename;
   List programs = [];
+  bool isTrustworthy;
 
   X509Certificate({@required this.data, this.filename});
 }

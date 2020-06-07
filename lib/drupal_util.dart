@@ -56,6 +56,10 @@ List getCertPrograms(ResourceObject cert) {
   return cert.attributes['field_program'];
 }
 
+bool isTrustwhorthy(ResourceObject cert) {
+  return cert.attributes['field_trustworthy'];
+}
+
 ResourceObject certAddProgram(ResourceObject cert, String program) {
   List programs = cert.attributes['field_program'];
   programs.add(program);
