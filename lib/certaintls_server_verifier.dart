@@ -4,7 +4,6 @@ import 'package:certaintls/x509certificate.dart';
 import 'package:json_api/client.dart';
 import 'package:http/http.dart';
 import 'package:json_api/http.dart';
-import 'package:json_api/query.dart';
 import 'drupal_util.dart';
 
 
@@ -24,13 +23,13 @@ class CertainTLSServerVerifier implements CertificateVerifier {
   @override
   Future<bool> verify(X509Certificate cert) async {
     // 1. Search the cert fingerprint
-    var result = await jsonApiClient.fetchCollectionAt(certUrl, parameters: QueryParameters({'filter[field_cert_sha256]':cert.data.sha256Thumbprint}));
+    var result = await findCert(cert.data, jsonApiClient);
     if (result.data.collection.length == 1) {
       cert.status = X509CertificateStatus.statusVerified;
       return true;
     }
     // 2. Search the SPKI fingerprint
-    result = await jsonApiClient.fetchCollectionAt(certUrl, parameters: QueryParameters({'filter[field_spki_sha256]':cert.data.publicKeyData.sha256Thumbprint}));
+    result = await findkey(cert.data, jsonApiClient);
     if (result.data.collection.length > 0) {
       cert.status = X509CertificateStatus.statusVerified;
       return true;

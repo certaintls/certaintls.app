@@ -43,16 +43,7 @@ void main() async {
       authorizationEndpoint, identifier, secret, basicAuth: false);
       var httpHandler = DartHttp(httpClient);
       var jsonApiClient = JsonApiClient(httpHandler);
-      int total = 0;
-      await Future.forEach(finder.onlineCerts, (cert) {
-        Future<bool> sucess = createCertResource(cert.data, jsonApiClient, baseUrl, program, isTrustworthy: true, isStock: true);
-        sucess.then((value) {
-          if (value) {
-            total++;
-          }
-        });
-        return sucess;
-      }).then((value) => print('The total number of certificates created from $program program is: $total'));
+      syncCertsToDrupal(finder.localCerts, jsonApiClient, program, baseUrl: baseUrl);
     }
   });
 }

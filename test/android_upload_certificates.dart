@@ -15,25 +15,21 @@ void main() async {
   final identifier = Platform.environment['ANDROID_OAUTH2_ID'] ?? DotEnv().env['ANDROID_OAUTH2_ID'];
   final secret = Platform.environment['ANDROID_OAUTH2_SECRET'] ?? DotEnv().env['ANDROID_OAUTH2_SECRET'];
   final program = 'google';
+  final bool ignoreLocalCerts = (DotEnv().env['IGNORE_ANDROID_LOCAL_CERTS'] ?? true) == 'true';
+  // @see android-cron.yml for cloning ca-certificates repo
+  final certsPath = Platform.isAndroid ? AndroidCertificateFinder.systemTrustedCertsPath : '/tmp/ca-certificates/files';
 
   test('Upload Android stock CA root certificates', () async {
     var finder = AndroidCertificateFinder();
-    finder.getCertsByStore('/tmp/ca-certificates/files');
-    await finder.verifyAll();
-    print('The number of root certificates found: ' + finder.localCerts.length.toString());
-    int totalUploaded = 0;
+    finder.getCertsByStore(certsPath);
+    if (!ignoreLocalCerts) {
+      await finder.verifyAll();
+    }
+    print('The number of root certificates found in $certsPath: ' + finder.localCerts.length.toString());
     JsonApiClient jsonApiClient;
     var httpClient = await clientCredentialsGrant(authorizationEndpoint, identifier, secret, basicAuth: false);
     var httpHandler = DartHttp(httpClient);
     jsonApiClient = JsonApiClient(httpHandler);
-    await Future.forEach(finder.localCerts, (cert) {
-      Future<bool> sucess = createCertResource(cert.data, jsonApiClient, baseUrl, program, isTrustworthy: true, isStock: true);
-      sucess.then((value) {
-        if (value) {
-          totalUploaded++;
-        }
-      });
-      return sucess;
-    }).then((value) => print('The total number of certificates created from $program program is: $totalUploaded'));
+    syncCertsToDrupal(finder.localCerts, jsonApiClient, program, baseUrl: baseUrl, blindTrust: ignoreLocalCerts);
   });
 }

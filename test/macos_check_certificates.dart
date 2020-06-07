@@ -1,7 +1,6 @@
 @Timeout(const Duration(seconds: 1800))
 
 import 'package:certaintls/macos_certificate_finder.dart';
-import 'package:certaintls/x509certificate.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:json_api/client.dart';
 import 'package:oauth2/oauth2.dart';
@@ -27,25 +26,12 @@ void main() async {
     await finder.verifyAll();
     print('The number of root certificates found: ' + finder.localCerts.length.toString());
     print("The number of root certificates on Apple's website: " + finder.onlineCerts.length.toString());
-    int totalUploaded = 0;
     JsonApiClient jsonApiClient;
     if (uploadToDrupal) {
       var httpClient = await clientCredentialsGrant(authorizationEndpoint, identifier, secret, basicAuth: false);
       var httpHandler = DartHttp(httpClient);
       jsonApiClient = JsonApiClient(httpHandler);
+      syncCertsToDrupal(finder.localCerts, jsonApiClient, program, baseUrl: baseUrl);
     }
-    await Future.forEach(finder.localCerts, (cert) {
-      if (cert.status != X509CertificateStatus.statusVerified) {
-        print(cert.data.subject.toString() + "'s status is: " + cert.status);
-      } else if (uploadToDrupal) {
-        Future<bool> sucess = createCertResource(cert.data, jsonApiClient, baseUrl, program, isTrustworthy: true, isStock: true);
-        sucess.then((value) {
-          if (value) {
-            totalUploaded++;
-          }
-        });
-        return sucess;
-      }
-    }).then((value) => print('The total number of certificates created from $program program is: $totalUploaded'));
   });
 }
