@@ -16,8 +16,8 @@ void main() async {
   await DotEnv().load('.env');
   final String baseUrl = DotEnv().env['BASE_URL'] ?? drupalBaseUrl;
   final authorizationEndpoint = Uri.parse(baseUrl + drupalEndpoints['oauth2_token']);
-  final identifier = Platform.environment['MOZILLA_OAUTH2_ID'] ?? DotEnv().env['MOZILLA_OAUTH2_ID'];
-  final secret = Platform.environment['MOZILLA_OAUTH2_SECRET'] ?? DotEnv().env['MOZILLA_OAUTH2_SECRET'];
+  final identifier = Platform.environment['MOZ_OAUTH2_ID'] ?? DotEnv().env['MOZ_OAUTH2_ID'];
+  final secret = Platform.environment['MOZ_OAUTH2_SECRET'] ?? DotEnv().env['MOZ_OAUTH2_SECRET'];
   final program = 'mozilla';
 
   test('Upload Mozilla stock CA root certificates', () async {
