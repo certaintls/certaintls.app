@@ -27,5 +27,5 @@ jobs:
     - run: flutter pub get
     - run: flutter test test/mozilla_upload_certificates.dart
       env:
-        WIN_OAUTH2_ID: ${{ secrets.MOZ_OAUTH2_ID }}
-        WIN_OAUTH2_SECRET: ${{ secrets.MOZ_OAUTH2_SECRET }}
+        MOZ_OAUTH2_ID: ${{ secrets.MOZ_OAUTH2_ID }}
+        MOZ_OAUTH2_SECRET: ${{ secrets.MOZ_OAUTH2_SECRET }}
