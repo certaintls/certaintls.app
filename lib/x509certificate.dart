@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'package:basic_utils/basic_utils.dart';
 import 'package:meta/meta.dart';
+import 'package:http/http.dart';
+import 'package:pem/pem.dart';
 
 class X509Certificate {
-  
+
   X509CertificateData data;
   String status = X509CertificateStatus.statusUnchecked;
   String filename;
@@ -36,4 +39,18 @@ String getOrg(X509CertificateData data) {
 
 String getCountry(X509CertificateData data) {
   return data.subject['2.5.4.6'];
+}
+
+Future<X509CertificateData> certDownload(String url, {Client client}) async {
+  if (client == null) {
+    client = Client();
+  }
+  var response = await client.get(Uri.parse(url));
+  if (response.statusCode == 200) {
+    var bytes = response.bodyBytes;
+    String encoded = utf8.decode(bytes);
+    List<int> certData = PemCodec(PemLabel.certificate).decode(encoded);
+    String onlinePEM = PemCodec(PemLabel.certificate).encode(certData);
+    return X509Utils.x509CertificateFromPem(onlinePEM);
+  } else return null;
 }
