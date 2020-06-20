@@ -4,9 +4,9 @@ import 'package:certaintls/android_certificate_finder.dart';
 import 'package:certaintls/certaintls_server_verifier.dart';
 import 'package:certaintls/certificate_finder.dart';
 import 'package:certaintls/macos_certificate_finder.dart';
-import 'package:certaintls/verifier_widget.dart';
 import 'package:certaintls/windows_certificate_finder.dart';
 import 'package:flutter/material.dart';
+import 'certificate_list_tile.dart';
 import 'x509certificate.dart';
 
 void main() => runApp(MyApp());
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
     var stores = finder.getCertStores();
     List<Tab> tabs = [];
     List<DeviceCerts> bodies = [];
-    stores.forEach((key, value) { 
+    stores.forEach((key, value) {
       tabs.add(Tab(text: key, icon: Icon(Icons.public)));
       bodies.add(DeviceCerts(path: value));
     });
@@ -53,7 +53,7 @@ class DeviceCerts extends StatelessWidget {
   final String path;
 
   DeviceCerts({this.path});
-  
+
   @override
   Widget build(BuildContext context) {
     CertificateFinder finder;
@@ -67,9 +67,9 @@ class DeviceCerts extends StatelessWidget {
     var certs = finder.getCertsByStore(path);
     var verifier = CertainTLSServerVerifier(certs);
 
-    return ListView.builder(
-      itemCount: certs.length,
-      itemBuilder: (context, i) {
+    return AnimatedList(
+      initialItemCount: certs.length,
+      itemBuilder: (context, i, animation) {
         X509CertificateData data = certs[i].data;
         String org;
         String country;
@@ -78,7 +78,7 @@ class DeviceCerts extends StatelessWidget {
           commonName = getCommonName(data);
           org = getOrg(data);
           country = getCountry(data) != null ? ' (' + getCountry(data)+ ')' : '';
-          return ListTile(leading: VerifierWidget(cert: certs[i], verifier: verifier), title: Text(org + country), subtitle: Text(commonName));
+          return CertificateListTile(cert: certs[i], verifier: verifier, title: Text(org + country), subtitle: Text(commonName));
         } catch (e) {
           return ListTile(title: Text(i.toString() + '- Exception:' + e.toString()));
         }

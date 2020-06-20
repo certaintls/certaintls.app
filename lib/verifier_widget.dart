@@ -1,29 +1,35 @@
 import 'package:certaintls/certificate_verifier.dart';
 import 'package:certaintls/x509certificate.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 
 class VerifierWidget extends StatefulWidget {
 
-  final X509Certificate cert;
+  final List<X509Certificate> certs;
   final CertificateVerifier verifier;
+  final int index;
+  final BuildContext listContext;
 
-  VerifierWidget({this.cert, this.verifier});
+  VerifierWidget({this.certs, this.verifier, this.listContext, this.index});
 
   @override
   _VerifierWidgetState createState() =>
-      _VerifierWidgetState(cert: cert, verifier: verifier);
+      _VerifierWidgetState(certs: certs, verifier: verifier, index: index);
 }
 
 class _VerifierWidgetState extends State<VerifierWidget> {
-  final X509Certificate cert;
+  List<X509Certificate> certs;
   final CertificateVerifier verifier;
   List<String> programs;
+  final BuildContext listContext;
+  final int index;
 
-  _VerifierWidgetState({this.cert, this.verifier});
+  _VerifierWidgetState({this.certs, this.verifier, this.listContext, this.index});
 
   @override
   Widget build(BuildContext context) {
     Icon iconDisplay;
+    var cert = certs[index];
     switch (cert.status) {
       case X509CertificateStatus.statusUnchecked:
         iconDisplay = Icon(Icons.info);
@@ -31,6 +37,11 @@ class _VerifierWidgetState extends State<VerifierWidget> {
         break;
       case X509CertificateStatus.statusCompromised:
         iconDisplay = Icon(Icons.highlight_off, color: Colors.red[500]);
+        certs.removeAt(index);
+        certs.insert(0, cert);
+        setState(() {});
+        // AnimatedList.of(listContext).insertItem(0);
+        //AnimatedList.of(context).removeItem(index, (context, animation) => null);
         break;
       case X509CertificateStatus.statusVerified:
         iconDisplay = Icon(Icons.security, color: Colors.green[500]);
@@ -43,30 +54,14 @@ class _VerifierWidgetState extends State<VerifierWidget> {
         iconDisplay = Icon(Icons.priority_high, color: Colors.yellow[500]);
         break;
     }
-    return Container(
-      width: 63,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              Padding(padding: EdgeInsets.only(bottom: 5), child: Image.asset('images/google.png', width: 12, color: cert.programs.contains('google') ? null : Colors.grey[300])),
-              Image.asset('images/microsoft.png', width: 12, color: cert.programs.contains('microsoft') ? null : Colors.grey[300]),
-              Padding(padding: EdgeInsets.only(top: 5), child: Image.asset('images/apple.png', width: 12, color: cert.programs.contains('apple') ? null : Colors.grey[300])),
-            ],
-          ),
-          IconButton(
-            icon: iconDisplay,
-            onPressed: _verify,
-          ),
-        ],
-      ),
+    return IconButton(
+      icon: iconDisplay,
+      onPressed: _verify,
     );
   }
 
   void _verify() async {
-    await verifier.verify(cert);
+    await verifier.verify(certs[index]);
     setState(() {});
   }
 }
