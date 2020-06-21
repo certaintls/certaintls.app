@@ -27,7 +27,7 @@ class CertificateState extends State<CertificateListTile> {
   Widget build(BuildContext context) {
     _verify();
     return ListTile(title: title, subtitle: subtitle,
-      leading: _generateStatusIcon(cert),
+      leading: _generateStatusIcon(cert.status),
       trailing: Container(
         width: 56,
         child: GridView.count(
@@ -51,11 +51,13 @@ class CertificateState extends State<CertificateListTile> {
     setState(() {});
   }
 
-  Widget _generateStatusIcon(X509Certificate cert) {
+  Widget _generateStatusIcon(String status) {
     Icon iconDisplay;
-    switch (cert.status) {
+    bool isInProgress = false;
+    switch (status) {
       case X509CertificateStatus.statusUnchecked:
         iconDisplay = Icon(Icons.info);
+        isInProgress = true;
         _verify();
         break;
       case X509CertificateStatus.statusCompromised:
@@ -66,15 +68,31 @@ class CertificateState extends State<CertificateListTile> {
         break;
       case X509CertificateStatus.statusTriedError:
         iconDisplay = Icon(Icons.autorenew, color: Colors.yellow[500]);
+        isInProgress = true;
         _verify();
         break;
       case X509CertificateStatus.statusUnverifiable:
         iconDisplay = Icon(Icons.priority_high, color: Colors.yellow[500]);
         break;
     }
-    return IconButton(
-      icon: iconDisplay,
-      onPressed: _verify,
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        IconButton(
+          icon: iconDisplay,
+          onPressed: _verify,
+        ),
+        SizedBox(
+          height: 24.0,
+          width: 24.0,
+          child: Visibility(
+            visible: isInProgress,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+            )
+          )
+        )
+      ]
     );
   }
 }
