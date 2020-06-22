@@ -1,31 +1,42 @@
+import 'package:basic_utils/basic_utils.dart';
 import 'package:certaintls/certificate_verifier.dart';
 import 'package:certaintls/x509certificate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class CertificateListTile extends StatefulWidget {
-  final X509Certificate cert;
+  final List<X509Certificate> certs;
   final CertificateVerifier verifier;
-  final Text title;
-  final Text subtitle;
+  final int pos;
 
-  CertificateListTile({this.cert, this.verifier, this.title, this.subtitle});
+  CertificateListTile(this.certs, this.pos, this.verifier);
 
   @override
-  State<StatefulWidget> createState() => CertificateState(cert: cert, verifier: verifier, title: title, subtitle: subtitle);
+  State<StatefulWidget> createState() {
+    X509Certificate cert = certs[pos];
+    X509CertificateData data = cert.data;
+    String commonName = getCommonName(data);
+    String org = getOrg(data);
+    String country = getCountry(data) != null ? ' (' + getCountry(data)+ ')' : '';
+    return CertificateState(certs: certs, pos: pos, verifier: verifier, title: Text(org + country), subtitle: Text(commonName));
+  }
 }
 
 class CertificateState extends State<CertificateListTile> {
-  X509Certificate cert;
+  List<X509Certificate> certs;
+  int pos;
   CertificateVerifier verifier;
   Text title;
   Text subtitle;
 
-  CertificateState({this.cert, this.verifier, this.title, this.subtitle});
+  CertificateState({this.certs, this.pos, this.verifier, this.title, this.subtitle});
 
   @override
   Widget build(BuildContext context) {
-    _verify();
+    X509Certificate cert = widget.certs[pos];
+    if (cert.status == X509CertificateStatus.statusUnchecked) {
+      _verify();
+    }
     return ListTile(title: title, subtitle: subtitle,
       leading: _generateStatusIcon(cert.status),
       trailing: Container(
@@ -47,8 +58,21 @@ class CertificateState extends State<CertificateListTile> {
   }
 
   void _verify() async {
-    await verifier.verify(cert);
-    setState(() {});
+    X509Certificate cert = certs[pos];
+    if (cert.status == X509CertificateStatus.statusUnchecked) {
+      await verifier.verify(cert);
+    }
+    switch(cert.status) {
+      case X509CertificateStatus.statusTriedError:
+        _verify();
+        break;
+      case X509CertificateStatus.statusCompromised:
+
+        break;
+    }
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Widget _generateStatusIcon(String status) {
@@ -58,7 +82,6 @@ class CertificateState extends State<CertificateListTile> {
       case X509CertificateStatus.statusUnchecked:
         iconDisplay = Icon(Icons.info);
         isInProgress = true;
-        _verify();
         break;
       case X509CertificateStatus.statusCompromised:
         iconDisplay = Icon(Icons.highlight_off, color: Colors.red[500]);
@@ -69,7 +92,6 @@ class CertificateState extends State<CertificateListTile> {
       case X509CertificateStatus.statusTriedError:
         iconDisplay = Icon(Icons.autorenew, color: Colors.yellow[500]);
         isInProgress = true;
-        _verify();
         break;
       case X509CertificateStatus.statusUnverifiable:
         iconDisplay = Icon(Icons.priority_high, color: Colors.yellow[500]);
