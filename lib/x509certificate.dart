@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:basic_utils/basic_utils.dart';
+import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'package:http/http.dart';
 import 'package:pem/pem.dart';
@@ -53,4 +54,55 @@ Future<X509CertificateData> certDownload(String url, {Client client}) async {
     String onlinePEM = PemCodec(PemLabel.certificate).encode(certData);
     return X509Utils.x509CertificateFromPem(onlinePEM);
   } else return null;
+}
+
+String getTitle(X509CertificateData data) => getOrg(data) + ' (' +getCountry(data)+')';
+
+String getSubtitle(X509CertificateData data) => getCommonName(data);
+
+String getOU(X509CertificateData data) {
+  var temp = X509Utils.DN['organizationalUnit'];
+  return data.subject[temp];
+}
+
+Widget generateStatusIcon(String status) {
+  Icon iconDisplay;
+  bool isInProgress = false;
+  switch (status) {
+    case X509CertificateStatus.statusUnchecked:
+      iconDisplay = Icon(Icons.info);
+      isInProgress = true;
+      break;
+    case X509CertificateStatus.statusCompromised:
+      iconDisplay = Icon(Icons.highlight_off, color: Colors.red[500]);
+      break;
+    case X509CertificateStatus.statusVerified:
+      iconDisplay = Icon(Icons.security, color: Colors.green[500]);
+      break;
+    case X509CertificateStatus.statusTriedError:
+      iconDisplay = Icon(Icons.autorenew, color: Colors.yellow[500]);
+      isInProgress = true;
+      break;
+    case X509CertificateStatus.statusUnverifiable:
+      iconDisplay = Icon(Icons.priority_high, color: Colors.yellow[500]);
+      break;
+  }
+  return Stack(
+    alignment: Alignment.center,
+    children: [
+      IconButton(
+        icon: iconDisplay,
+      ),
+      SizedBox(
+        height: 24.0,
+        width: 24.0,
+        child: Visibility(
+          visible: isInProgress,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+          )
+        )
+      )
+    ]
+  );
 }

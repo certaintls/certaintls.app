@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:certaintls/android_certificate_finder.dart';
 import 'package:certaintls/certaintls_server_verifier.dart';
+import 'package:certaintls/certificate_detail.dart';
 import 'package:certaintls/certificate_finder.dart';
 import 'package:certaintls/macos_certificate_finder.dart';
 import 'package:certaintls/windows_certificate_finder.dart';
@@ -29,42 +30,27 @@ class MyApp extends StatelessWidget {
     });
     return MaterialApp(
       title: 'CertainTLS',
-      home: DefaultTabController(
-        length: stores.length,
-        child: Scaffold(
-          body: NestedScrollView(
-            headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-              return <Widget>[
-                SliverAppBar(
-                  expandedHeight: 200.0,
-                  floating: false,
-                  pinned: true,
-                  flexibleSpace: FlexibleSpaceBar(
-                      centerTitle: true,
-                      title: Text("Device Certificates",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16.0,
-                          ))),
-                ),
-                SliverPersistentHeader(
-                  delegate: _SliverAppBarDelegate(
-                    TabBar(
-                      labelColor: Colors.black87,
-                      unselectedLabelColor: Colors.grey,
-                      tabs: tabs
-                    ),
-                  ),
-                  pinned: true,
-                ),
-              ];
-            },
-            body: TabBarView(
-              children: bodies,
-            )
-          )
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Device Certificates'),
         ),
-      ),
+        body: bodies[0],
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.public),
+              title: Text('Home'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.business),
+              title: Text('Business'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.school),
+              title: Text('Problems'),
+            ),
+          ]),
+      )
     );
   }
 }
@@ -91,45 +77,15 @@ class DeviceCerts extends StatelessWidget {
       padding: EdgeInsets.only(top: 10),
       itemCount: certs.length,
       itemBuilder: (context, i) {
-        return CertificateListTile(certs, i, verifier);
-      }
+        return new GestureDetector(
+          child: CertificateListTile(certs, i, verifier),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CertificateDetail(certs[i])));
+          }
+        );
+      },
     );
-  }
-}
-
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate(this._tabBar);
-
-  final TabBar _tabBar;
-  final Container customController = Container(
-    height: 60,
-    color: Colors.white,
-    child: Row(
-      children: [
-        Text('Total: , Checked: , Not Trustworthy: , Uncertain: '),
-        Switch(value: false, onChanged: null)
-      ]
-    )
-  );
-  @override
-  double get minExtent => 60;
-  @override
-  double get maxExtent => _tabBar.preferredSize.height;
-
-  @override
-  Widget build(
-    BuildContext context, double shrinkOffset, bool overlapsContent) {
-      if (shrinkOffset == maxExtent) {
-        return customController;
-      }
-      return Container(
-        color: Colors.white,
-        child: _tabBar,
-      );
-  }
-
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
   }
 }
