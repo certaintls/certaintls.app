@@ -76,16 +76,20 @@ class DeviceCerts extends StatelessWidget {
     return ListView.builder(
       padding: EdgeInsets.only(top: 10),
       itemCount: certs.length,
-      itemBuilder: (context, i) {
-        return new GestureDetector(
-          child: CertificateListTile(certs, i, verifier),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => CertificateDetail(certs[i])));
-          }
-        );
-      },
+      itemBuilder: (context, i) =>
+        Hero(
+          tag: i,
+          child: Material(
+            child: GestureDetector(
+              child: CertificateListTile(certs, i, verifier),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CertificateDetail(certs[i], i)));
+              }
+            ),
+          ),
+        )
     );
   }
 }

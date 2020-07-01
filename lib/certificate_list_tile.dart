@@ -37,23 +37,25 @@ class CertificateState extends State<CertificateListTile> {
     if (cert.status == X509CertificateStatus.statusUnchecked) {
       _verify();
     }
-    return ListTile(title: title, subtitle: subtitle,
-      leading: generateStatusIcon(cert.status),
-      trailing: Container(
-        width: 56,
-        child: GridView.count(
-          crossAxisCount: 2,
-          mainAxisSpacing: 6.0,
-          crossAxisSpacing: 6.0,
-          padding: const EdgeInsets.all(8.0),
-          children: [
-            Image.asset('images/google.png', color: cert.programs.contains('google') ? null : Colors.grey[300]),
-            Image.asset('images/microsoft.png', color: cert.programs.contains('microsoft') ? null : Colors.grey[300]),
-            Image.asset('images/apple.png', color: cert.programs.contains('apple') ? null : Colors.grey[300]),
-            Image.asset('images/mozilla.png', color: cert.programs.contains('mozilla') ? null : Colors.grey[300]),
-          ],
+    return Container(
+      child: ListTile(title: title, subtitle: subtitle,
+        leading: generateStatusIcon(cert.status),
+        trailing: Container(
+          width: 56,
+          child: GridView.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: 6.0,
+            crossAxisSpacing: 6.0,
+            padding: const EdgeInsets.all(8.0),
+            children: [
+              Image.asset('images/google.png', color: cert.programs.contains('google') ? null : Colors.grey[300]),
+              Image.asset('images/microsoft.png', color: cert.programs.contains('microsoft') ? null : Colors.grey[300]),
+              Image.asset('images/apple.png', color: cert.programs.contains('apple') ? null : Colors.grey[300]),
+              Image.asset('images/mozilla.png', color: cert.programs.contains('mozilla') ? null : Colors.grey[300]),
+            ],
+          )
         )
-      )
+      ),
     );
   }
 

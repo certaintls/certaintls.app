@@ -91,7 +91,7 @@ Widget generateStatusIcon(String status) {
     alignment: Alignment.center,
     children: [
       IconButton(
-        icon: iconDisplay,
+        icon: iconDisplay, onPressed: () {  },
       ),
       SizedBox(
         height: 24.0,
