@@ -11,6 +11,9 @@ import 'macos_certificate_finder.dart';
 import 'windows_certificate_finder.dart';
 import 'x509certificate.dart';
 
+/// storeCerts[0] is the root certs
+/// storeCerts[1] is the user intalled certs
+/// storeCerts[2] is the problematic certs added from the first two
 class CertsModel extends ChangeNotifier {
   // The third list contains the problematic certs
   List<List<X509Certificate>> storeCerts = List(3);
@@ -29,14 +32,26 @@ class CertsModel extends ChangeNotifier {
     }
     stores = finder.getCertStores();
     storeCerts[0] = finder.getCertsByStore(stores.values.toList()[0]);
-    storeCerts[1] = null;
+    if (stores.length > 1) {
+      storeCerts[1] = finder.getCertsByStore(stores.values.toList()[1]);
+    } else {
+      storeCerts[1] = [];
+    }
     storeCerts[2] = [];
-
     verifier = CertainTLSServerVerifier(storeCerts[0]);
+    verifyAll();
   }
 
   void verifyAll() async {
     await Future.forEach(storeCerts[0], (X509Certificate cert) async {
+      await verifier.verify(cert).then((sucess) {
+        if (cert.status != X509CertificateStatus.statusVerified) {
+          storeCerts[2].add(cert);
+        }
+        notifyListeners();
+      });
+    });
+    await Future.forEach(storeCerts[1], (X509Certificate cert) async {
       await verifier.verify(cert).then((sucess) {
         if (cert.status != X509CertificateStatus.statusVerified) {
           storeCerts[2].add(cert);

@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'package:certaintls/certificate_detail.dart';
-import 'package:certaintls/x509certificate.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'CertsModel.dart';
@@ -19,12 +17,10 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    var model = Provider.of<CertsModel>(context, listen: false);
-    model.verifyAll();
     List<DeviceCerts> bodies = [];
-    bodies.add(DeviceCerts(certs: model.storeCerts[0]));
-    bodies.add(DeviceCerts(certs: null));
-    bodies.add(DeviceCerts(certs: model.storeCerts[2]));
+    bodies.add(DeviceCerts(listRef: 0));
+    bodies.add(DeviceCerts(listRef: 1));
+    bodies.add(DeviceCerts(listRef: 2));
 
     return MaterialApp(
         title: 'CertainTLS',
@@ -41,7 +37,7 @@ class _MyAppState extends State<MyApp> {
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.cloud_download),
-                title: Text('Custom Installed'),
+                title: Text('User Installed'),
               ),
               BottomNavigationBarItem(
                   icon: Stack(alignment: Alignment.topRight, children: <Widget>[
@@ -86,28 +82,30 @@ class _MyAppState extends State<MyApp> {
 }
 
 class DeviceCerts extends StatelessWidget {
-  final List<X509Certificate> certs;
+  final listRef;
 
-  DeviceCerts({this.certs});
+  DeviceCerts({this.listRef});
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-        padding: EdgeInsets.only(top: 10),
-        itemCount: certs.length,
-        itemBuilder: (context, i) => Hero(
-              tag: i,
-              child: Material(
-                child: GestureDetector(
-                    child: CertificateTile(certs[i]),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  CertificateDetail(certs[i], i)));
-                    }),
-              ),
-            ));
+    return Consumer<CertsModel>(
+      builder: (context, model, child) => ListView.builder(
+          padding: EdgeInsets.only(top: 10),
+          itemCount: model.storeCerts[listRef].length,
+          itemBuilder: (context, i) => Hero(
+                tag: i,
+                child: Material(
+                  child: GestureDetector(
+                      child: CertificateTile(model.storeCerts[listRef][i]),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => CertificateDetail(
+                                    model.storeCerts[listRef][i], i)));
+                      }),
+                ),
+              )),
+    );
   }
 }
