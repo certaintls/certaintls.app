@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> {
           ),
           body: bodies[_selectedIndex],
           bottomNavigationBar: BottomNavigationBar(
-            items: const <BottomNavigationBarItem>[
+            items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
                 icon: Icon(Icons.public),
                 title: Text('Authorities'),
@@ -44,9 +44,33 @@ class _MyAppState extends State<MyApp> {
                 title: Text('Custom Installed'),
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.warning),
-                title: Text('Problems'),
-              ),
+                  icon: Stack(alignment: Alignment.topRight, children: <Widget>[
+                    Icon(Icons.warning),
+                    Positioned(
+                        top: 0,
+                        right: 0,
+                        child: Container(
+                            padding: EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: Colors.redAccent,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            constraints: BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Consumer<CertsModel>(
+                                builder: (context, certsModel, child) => Text(
+                                      certsModel.storeCerts[2].length
+                                          .toString(),
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    )))),
+                  ]),
+                  title: Text('Problems'))
             ],
             currentIndex: _selectedIndex,
             onTap: _onItemTapped,
