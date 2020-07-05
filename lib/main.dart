@@ -30,30 +30,35 @@ class _MyAppState extends State<MyApp> {
           ),
           body: bodies[_selectedIndex],
           bottomNavigationBar: BottomNavigationBar(
+            type: BottomNavigationBarType.shifting,
+            showUnselectedLabels: false,
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(
+                backgroundColor: Theme.of(context).primaryColor,
                 icon: Icon(Icons.public),
                 title: Text('Authorities'),
               ),
               BottomNavigationBarItem(
+                backgroundColor: Theme.of(context).primaryColor,
                 icon: Icon(Icons.cloud_download),
                 title: Text('User Installed'),
               ),
               BottomNavigationBarItem(
+                  backgroundColor: Theme.of(context).primaryColor,
                   icon: Stack(alignment: Alignment.topRight, children: <Widget>[
                     Icon(Icons.warning),
                     Positioned(
                         top: 0,
                         right: 0,
                         child: Container(
-                            padding: EdgeInsets.all(2),
+                            padding: EdgeInsets.all(1),
                             decoration: BoxDecoration(
                               color: Colors.redAccent,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             constraints: BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
+                              minWidth: 15,
+                              minHeight: 15,
                             ),
                             child: Consumer<CertsModel>(
                                 builder: (context, certsModel, child) => Text(
