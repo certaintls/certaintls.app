@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -13,12 +12,14 @@ import 'windows_certificate_finder.dart';
 import 'x509certificate.dart';
 
 class CertsModel extends ChangeNotifier {
-  List<List<X509Certificate>> storeCerts = [];
+  // The third list contains the problematic certs
+  List<List<X509Certificate>> storeCerts = List(3);
   CertificateVerifier verifier;
   Map<String, String> stores;
 
   CertsModel() {
     CertificateFinder finder;
+    storeCerts[2] = [];
     if (Platform.isAndroid) {
       finder = AndroidCertificateFinder();
     } else if (Platform.isMacOS) {
@@ -27,25 +28,23 @@ class CertsModel extends ChangeNotifier {
       finder = WindowsCertificateFinder();
     }
     stores = finder.getCertStores();
-    stores.forEach((key, path) {
-      storeCerts.add(finder.getCertsByStore(path));
-    });
+    storeCerts[0] = finder.getCertsByStore(stores.values.toList()[0]);
+    storeCerts[1] = null;
+    storeCerts[2] = [];
 
     verifier = CertainTLSServerVerifier(storeCerts[0]);
   }
 
   void verifyAll() async {
-    await Future.forEach(storeCerts[0], (cert) async {
+    await Future.forEach(storeCerts[0], (X509Certificate cert) async {
       await verifier.verify(cert).then((sucess) {
+        if (cert.status != X509CertificateStatus.statusVerified) {
+          storeCerts[2].add(cert);
+        }
         notifyListeners();
       });
     });
   }
 
   Map<String, String> getStores() => stores;
-
-  Tab getTab(int i) {
-    return Tab(text: stores.keys.toList()[i], icon: Icon(Icons.public));
-  }
-
 }

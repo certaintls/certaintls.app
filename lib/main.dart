@@ -1,95 +1,89 @@
 import 'dart:io';
-import 'package:certaintls/android_certificate_finder.dart';
-import 'package:certaintls/certaintls_server_verifier.dart';
 import 'package:certaintls/certificate_detail.dart';
-import 'package:certaintls/certificate_finder.dart';
-import 'package:certaintls/macos_certificate_finder.dart';
-import 'package:certaintls/windows_certificate_finder.dart';
+import 'package:certaintls/x509certificate.dart';
 import 'package:flutter/material.dart';
-import 'certificate_list_tile.dart';
+import 'package:provider/provider.dart';
+import 'CertsModel.dart';
+import 'certificate_tile.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(
+    ChangeNotifierProvider(create: (context) => CertsModel(), child: MyApp()));
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  int _selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
-    CertificateFinder finder;
-    if (Platform.isAndroid) {
-      finder = AndroidCertificateFinder();
-    } else if (Platform.isMacOS) {
-      finder = MacOSCertificateFinder();
-    } else if (Platform.isWindows) {
-      finder = WindowsCertificateFinder();
-    }
-    var stores = finder.getCertStores();
-    List<Tab> tabs = [];
+    var model = Provider.of<CertsModel>(context, listen: false);
+    model.verifyAll();
     List<DeviceCerts> bodies = [];
-    stores.forEach((key, value) {
-      tabs.add(Tab(text: key, icon: Icon(Icons.public)));
-      bodies.add(DeviceCerts(path: value));
-    });
+    bodies.add(DeviceCerts(certs: model.storeCerts[0]));
+    bodies.add(DeviceCerts(certs: null));
+    bodies.add(DeviceCerts(certs: model.storeCerts[2]));
+
     return MaterialApp(
-      title: 'CertainTLS',
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Device Certificates'),
-        ),
-        body: bodies[0],
-        bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.public),
-              title: Text('Home'),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.business),
-              title: Text('Business'),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.school),
-              title: Text('Problems'),
-            ),
-          ]),
-      )
-    );
+        title: 'CertainTLS',
+        home: Scaffold(
+          appBar: AppBar(
+            title: Text('Device Certificates'),
+          ),
+          body: bodies[_selectedIndex],
+          bottomNavigationBar: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.public),
+                title: Text('Authorities'),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.cloud_download),
+                title: Text('Custom Installed'),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.warning),
+                title: Text('Problems'),
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+          ),
+        ));
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 }
 
 class DeviceCerts extends StatelessWidget {
-  final String path;
+  final List<X509Certificate> certs;
 
-  DeviceCerts({this.path});
+  DeviceCerts({this.certs});
 
   @override
   Widget build(BuildContext context) {
-    CertificateFinder finder;
-    if (Platform.isAndroid) {
-      finder = AndroidCertificateFinder();
-    } else if (Platform.isMacOS) {
-      finder = MacOSCertificateFinder();
-    } else if (Platform.isWindows) {
-      finder = WindowsCertificateFinder();
-    }
-    var certs = finder.getCertsByStore(path);
-    var verifier = CertainTLSServerVerifier(certs);
-
     return ListView.builder(
-      padding: EdgeInsets.only(top: 10),
-      itemCount: certs.length,
-      itemBuilder: (context, i) =>
-        Hero(
-          tag: i,
-          child: Material(
-            child: GestureDetector(
-              child: CertificateListTile(certs, i, verifier),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CertificateDetail(certs[i], i)));
-              }
-            ),
-          ),
-        )
-    );
+        padding: EdgeInsets.only(top: 10),
+        itemCount: certs.length,
+        itemBuilder: (context, i) => Hero(
+              tag: i,
+              child: Material(
+                child: GestureDetector(
+                    child: CertificateTile(certs[i]),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  CertificateDetail(certs[i], i)));
+                    }),
+              ),
+            ));
   }
 }
