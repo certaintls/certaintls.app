@@ -17,6 +17,7 @@ import 'x509certificate.dart';
 class CertsModel extends ChangeNotifier {
   // The third list contains the problematic certs
   List<List<X509Certificate>> storeCerts = List(3);
+  List<int> progress = [0, 0];
   CertificateVerifier verifier;
   Map<String, String> stores;
 
@@ -48,6 +49,7 @@ class CertsModel extends ChangeNotifier {
         if (cert.status != X509CertificateStatus.statusVerified) {
           storeCerts[2].add(cert);
         }
+        progress[0]++;
         notifyListeners();
       });
     });
@@ -56,6 +58,7 @@ class CertsModel extends ChangeNotifier {
         if (cert.status != X509CertificateStatus.statusVerified) {
           storeCerts[2].add(cert);
         }
+        progress[1]++;
         notifyListeners();
       });
     });

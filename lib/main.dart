@@ -18,15 +18,15 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     List<DeviceCerts> bodies = [];
-    bodies.add(DeviceCerts(listRef: 0));
-    bodies.add(DeviceCerts(listRef: 1));
-    bodies.add(DeviceCerts(listRef: 2));
+    bodies.add(DeviceCerts(0));
+    bodies.add(DeviceCerts(1));
+    bodies.add(DeviceCerts(2));
 
     return MaterialApp(
         title: 'CertainTLS',
         home: Scaffold(
           appBar: AppBar(
-            title: Text('Device Certificates'),
+            title: Text('CertainTLS'),
           ),
           body: bodies[_selectedIndex],
           bottomNavigationBar: BottomNavigationBar(
@@ -84,28 +84,43 @@ class _MyAppState extends State<MyApp> {
 class DeviceCerts extends StatelessWidget {
   final listRef;
 
-  DeviceCerts({this.listRef});
+  DeviceCerts(this.listRef);
 
   @override
   Widget build(BuildContext context) {
     return Consumer<CertsModel>(
-      builder: (context, model, child) => ListView.builder(
-          padding: EdgeInsets.only(top: 10),
-          itemCount: model.storeCerts[listRef].length,
-          itemBuilder: (context, i) => Hero(
-                tag: i,
-                child: Material(
-                  child: GestureDetector(
-                      child: CertificateTile(model.storeCerts[listRef][i]),
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => CertificateDetail(
-                                    model.storeCerts[listRef][i], i)));
-                      }),
-                ),
-              )),
+      builder: (context, m, child) => Column(children: [
+        Expanded(
+          child: ListView.builder(
+              padding: EdgeInsets.only(top: 10),
+              itemCount: m.storeCerts[listRef].length,
+              itemBuilder: (context, i) => Hero(
+                    tag: i,
+                    child: Material(
+                      child: GestureDetector(
+                          child: CertificateTile(m.storeCerts[listRef][i]),
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => CertificateDetail(
+                                        m.storeCerts[listRef][i], i)));
+                          }),
+                    ),
+                  )),
+        ),
+        _showProgressIndicator(m, listRef)
+      ]),
     );
+  }
+
+  Widget _showProgressIndicator(CertsModel m, int listRef) {
+    var length = m.storeCerts[listRef].length;
+    return listRef == 2
+        ? SizedBox()
+        : LinearProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.green[300]),
+            backgroundColor: Colors.white,
+            value: length == 0 ? 0 : m.progress[listRef] / length);
   }
 }
