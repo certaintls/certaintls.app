@@ -6,7 +6,6 @@ import 'package:http/http.dart';
 import 'package:pem/pem.dart';
 
 class X509Certificate {
-
   X509CertificateData data;
   String status = X509CertificateStatus.statusUnchecked;
   String filename;
@@ -17,16 +16,18 @@ class X509Certificate {
 }
 
 class X509CertificateStatus {
-  static const String statusUnchecked = 'toCheck';
-  static const String statusCompromised = 'toRevoke';
-  static const String statusVerified = 'doCalm';
-  static const String statusTriedError = 'tryAgain';
-  static const String statusUnverifiable = 'beAlarmed';
+  static const String statusUnchecked = 'Unchecked';
+  static const String statusCompromised = 'Untrustworhy';
+  static const String statusVerified = 'Verified';
+  static const String statusTriedError = 'Error';
+  static const String statusUnverifiable = 'Unverifiable';
 }
 
 String getCommonName(X509CertificateData data) {
   // If commone name is missing, use the org unit
-  return data.subject['2.5.4.3'] != null ? data.subject['2.5.4.3'] : (data.subject['2.5.4.11'] ?? '');
+  return data.subject['2.5.4.3'] != null
+      ? data.subject['2.5.4.3']
+      : (data.subject['2.5.4.11'] ?? '');
 }
 
 String getOrg(X509CertificateData data) {
@@ -53,10 +54,12 @@ Future<X509CertificateData> certDownload(String url, {Client client}) async {
     List<int> certData = PemCodec(PemLabel.certificate).decode(encoded);
     String onlinePEM = PemCodec(PemLabel.certificate).encode(certData);
     return X509Utils.x509CertificateFromPem(onlinePEM);
-  } else return null;
+  } else
+    return null;
 }
 
-String getTitle(X509CertificateData data) => getOrg(data) + ' (' +getCountry(data)+')';
+String getTitle(X509CertificateData data) =>
+    getOrg(data) + ' (' + getCountry(data) + ')';
 
 String getSubtitle(X509CertificateData data) => getCommonName(data);
 
@@ -87,22 +90,18 @@ Widget generateStatusIcon(String status) {
       iconDisplay = Icon(Icons.priority_high, color: Colors.yellow[500]);
       break;
   }
-  return Stack(
-    alignment: Alignment.center,
-    children: [
-      IconButton(
-        icon: iconDisplay, onPressed: () {  },
-      ),
-      SizedBox(
+  return Stack(alignment: Alignment.center, children: [
+    IconButton(
+      icon: iconDisplay,
+      onPressed: () {},
+    ),
+    SizedBox(
         height: 24.0,
         width: 24.0,
         child: Visibility(
-          visible: isInProgress,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-          )
-        )
-      )
-    ]
-  );
+            visible: isInProgress,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+            )))
+  ]);
 }

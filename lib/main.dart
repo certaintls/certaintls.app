@@ -1,7 +1,7 @@
 import 'package:certaintls/certificate_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'CertsModel.dart';
+import 'certs_model.dart';
 import 'certificate_tile.dart';
 
 void main() => runApp(
