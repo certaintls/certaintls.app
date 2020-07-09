@@ -51,6 +51,9 @@ class CertificateDetail extends StatelessWidget {
                               X509Utils.DN['organizationalUnitName']] ??
                           ''),
                       SizedBox(height: 10),
+                      Text('Country:'),
+                      Text(data.subject[X509Utils.DN['countryName']] ?? ''),
+                      SizedBox(height: 10),
                       Text('Serial number:'),
                       Text(data.serialNumber.toString()),
                       SizedBox(height: 20),
