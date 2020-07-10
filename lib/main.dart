@@ -1,11 +1,13 @@
+import 'dart:async';
 import 'package:certaintls/certificate_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'certs_model.dart';
 import 'certificate_tile.dart';
 
-void main() => runApp(
-    ChangeNotifierProvider(create: (context) => CertsModel(), child: MyApp()));
+void main() => runApp(ChangeNotifierProvider(
+    create: (context) => CertsModel(),
+    child: MaterialApp(title: 'CertainTLS', home: MyApp())));
 
 class MyApp extends StatefulWidget {
   @override
@@ -16,73 +18,88 @@ class _MyAppState extends State<MyApp> {
   int _selectedIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    Timer.run(() => _showAboutDialog(context));
+  }
+
+  @override
   Widget build(BuildContext context) {
     List<DeviceCerts> bodies = [];
     bodies.add(DeviceCerts(0));
     bodies.add(DeviceCerts(1));
     bodies.add(DeviceCerts(2));
 
-    return MaterialApp(
-        title: 'CertainTLS',
-        home: Scaffold(
-          appBar: AppBar(
-            title: Text('CertainTLS'),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('CertainTLS'),
+        actions: <Widget>[
+          IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () => _showAboutDialog(context))
+        ],
+      ),
+      body: bodies[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.shifting,
+        showUnselectedLabels: false,
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            backgroundColor: Theme.of(context).primaryColor,
+            icon: Icon(Icons.public),
+            title: Text('Authorities'),
           ),
-          body: bodies[_selectedIndex],
-          bottomNavigationBar: BottomNavigationBar(
-            type: BottomNavigationBarType.shifting,
-            showUnselectedLabels: false,
-            items: <BottomNavigationBarItem>[
-              BottomNavigationBarItem(
-                backgroundColor: Theme.of(context).primaryColor,
-                icon: Icon(Icons.public),
-                title: Text('Authorities'),
-              ),
-              BottomNavigationBarItem(
-                backgroundColor: Theme.of(context).primaryColor,
-                icon: Icon(Icons.cloud_download),
-                title: Text('User Installed'),
-              ),
-              BottomNavigationBarItem(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  icon: Stack(alignment: Alignment.topRight, children: <Widget>[
-                    Icon(Icons.warning),
-                    Positioned(
-                        top: 0,
-                        right: 0,
-                        child: Container(
-                            padding: EdgeInsets.all(1),
-                            decoration: BoxDecoration(
-                              color: Colors.redAccent,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            constraints: BoxConstraints(
-                              minWidth: 15,
-                              minHeight: 15,
-                            ),
-                            child: Consumer<CertsModel>(
-                                builder: (context, certsModel, child) => Text(
-                                      certsModel.storeCerts[2].length
-                                          .toString(),
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    )))),
-                  ]),
-                  title: Text('Problems'))
-            ],
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
+          BottomNavigationBarItem(
+            backgroundColor: Theme.of(context).primaryColor,
+            icon: Icon(Icons.cloud_download),
+            title: Text('User Installed'),
           ),
-        ));
+          BottomNavigationBarItem(
+              backgroundColor: Theme.of(context).primaryColor,
+              icon: Stack(alignment: Alignment.topRight, children: <Widget>[
+                Icon(Icons.warning),
+                Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                        padding: EdgeInsets.all(1),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: BoxConstraints(
+                          minWidth: 15,
+                          minHeight: 15,
+                        ),
+                        child: Consumer<CertsModel>(
+                            builder: (context, certsModel, child) => Text(
+                                  certsModel.storeCerts[2].length.toString(),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                )))),
+              ]),
+              title: Text('Problems'))
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
+    );
   }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _showAboutDialog(BuildContext ctx) {
+    showAboutDialog(
+        context: ctx,
+        applicationVersion: '1.1.0+2',
+        applicationIcon: Image.asset('images/logo.png'));
   }
 }
 
