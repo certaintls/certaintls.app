@@ -10,11 +10,12 @@ import 'package:html/parser.dart';
 import 'package:http/http.dart';
 import 'package:pem/pem.dart';
 
-class WindowsCertificateFinder implements CertificateFinder, CertificateVerifier {
-  List<X509Certificate> localCerts = [];
+class WindowsCertificateFinder
+    implements CertificateFinder, CertificateVerifier {
   static String systemTrustedCertsPath = 'Root';
   static String userInstalledCertsPath = 'My';
-  static RegExp delimiter = RegExp(r'================ Certificate \d* ================');
+  static RegExp delimiter =
+      RegExp(r'================ Certificate \d* ================');
   static String microsoftCurrentTrustedStore =
       'https://ccadb-public.secure.force.com/microsoft/IncludedCACertificateReportForMSFT';
   List<MicroSoftCertificateInfo> onlineCerts = [];
@@ -23,9 +24,11 @@ class WindowsCertificateFinder implements CertificateFinder, CertificateVerifier
 
   @override
   List<X509Certificate> getCertsByStore(String storePath) {
+    List<X509Certificate> certs = [];
     ProcessResult results;
     if (storePath == userInstalledCertsPath) {
-      results = Process.runSync('CertUtil', ['-v', '-store', '-user', storePath]);
+      results =
+          Process.runSync('CertUtil', ['-v', '-store', '-user', storePath]);
     } else {
       results = Process.runSync('CertUtil', ['-v', '-store', storePath]);
     }
@@ -45,11 +48,11 @@ class WindowsCertificateFinder implements CertificateFinder, CertificateVerifier
           sha256Thumbprint: tokenize(s, 'Cert Hash(sha256): ').toUpperCase(),
           subject: subject,
         );
-        localCerts.add(X509Certificate(data: data));
+        certs.add(X509Certificate(data: data));
       }
     });
 
-    return localCerts;
+    return certs;
   }
 
   @override
@@ -61,29 +64,37 @@ class WindowsCertificateFinder implements CertificateFinder, CertificateVerifier
 
     String certName = CertificateFinder.getCertName(cert.data);
     // 1. Check if any cert hash matches
-    int i = onlineCerts.indexWhere((onlineCert) => onlineCert.fingerprint == cert.data.sha256Thumbprint);
-    if (i != -1 ) { // There is a match
+    int i = onlineCerts.indexWhere(
+        (onlineCert) => onlineCert.fingerprint == cert.data.sha256Thumbprint);
+    if (i != -1) {
+      // There is a match
       cert.status = X509CertificateStatus.statusVerified;
       // 2. If a name matches
-    } else if ((onlineCerts.indexWhere((onlineCert) => onlineCert.commonName == certName)) != -1) {
-        // 3. Download the cert file and check SPKI hash
-        i = onlineCerts.indexWhere((onlineCert) => onlineCert.commonName == certName);
-        X509CertificateData data;
-        if (onlineCerts[i].data == null) {
-          data = await _downloadCert(onlineCerts[i].fileUrl);
-        }
-        if (data.publicKeyData.sha256Thumbprint == cert.data.publicKeyData.sha256Thumbprint) {
-          cert.status = X509CertificateStatus.statusVerified;
-        } else cert.status = X509CertificateStatus.statusCompromised;
+    } else if ((onlineCerts
+            .indexWhere((onlineCert) => onlineCert.commonName == certName)) !=
+        -1) {
+      // 3. Download the cert file and check SPKI hash
+      i = onlineCerts
+          .indexWhere((onlineCert) => onlineCert.commonName == certName);
+      X509CertificateData data;
+      if (onlineCerts[i].data == null) {
+        data = await _downloadCert(onlineCerts[i].fileUrl);
+      }
+      if (data.publicKeyData.sha256Thumbprint ==
+          cert.data.publicKeyData.sha256Thumbprint) {
+        cert.status = X509CertificateStatus.statusVerified;
+      } else
+        cert.status = X509CertificateStatus.statusCompromised;
       // 4. Can't find any matches
-    } else cert.status = X509CertificateStatus.statusUnverifiable;
+    } else
+      cert.status = X509CertificateStatus.statusUnverifiable;
 
     return true;
   }
 
   @override
-  Future verifyAll() async {
-    await Future.forEach(localCerts, (cert) async {
+  Future verifyAll(List<X509Certificate> certs) async {
+    await Future.forEach(certs, (cert) async {
       await verify(cert);
     });
   }
@@ -100,7 +111,8 @@ class WindowsCertificateFinder implements CertificateFinder, CertificateVerifier
     caOwners.removeLast();
     List<Element> commonNames =
         document.querySelectorAll('.slds-table tr > td:nth-child(3)');
-    List<Element> fileUrls = document.querySelectorAll('.slds-table tr > td:nth-child(7)');
+    List<Element> fileUrls =
+        document.querySelectorAll('.slds-table tr > td:nth-child(7)');
 
     for (int i = 0; i < caOwners.length; i++) {
       String caOwner = caOwners[i].querySelector('span').text;
@@ -112,21 +124,25 @@ class WindowsCertificateFinder implements CertificateFinder, CertificateVerifier
         data = await _downloadCert(url, client: client);
       }
       if (!downloadOnlineCert || data != null) {
-        onlineCerts.add(MicroSoftCertificateInfo(caOwner, commonName, sha256, url, data));
+        onlineCerts.add(
+            MicroSoftCertificateInfo(caOwner, commonName, sha256, url, data));
       }
     }
   }
 
   @override
   Map<String, String> getCertStores() {
-    return {'System Root Certificates': systemTrustedCertsPath, 'User Installed Certificates': userInstalledCertsPath};
+    return {
+      'System Root Certificates': systemTrustedCertsPath,
+      'User Installed Certificates': userInstalledCertsPath
+    };
   }
 
   String tokenize(String text, String label) {
     int pos = text.indexOf(label);
     if (pos > 0) {
       int l = label.length;
-      return text.substring(pos+l, text.indexOf('\n', pos)).trim();
+      return text.substring(pos + l, text.indexOf('\n', pos)).trim();
     }
     return null;
   }
@@ -142,7 +158,8 @@ class WindowsCertificateFinder implements CertificateFinder, CertificateVerifier
       List<int> certData = PemCodec(PemLabel.certificate).decode(encoded);
       String onlinePEM = PemCodec(PemLabel.certificate).encode(certData);
       return X509Utils.x509CertificateFromPem(onlinePEM);
-    } else return null;
+    } else
+      return null;
   }
 }
 
@@ -153,5 +170,6 @@ class MicroSoftCertificateInfo {
   String fingerprint;
   String fileUrl;
   X509CertificateData data;
-  MicroSoftCertificateInfo(this.caOwner, this.commonName, this.fingerprint, this.fileUrl, this.data);
+  MicroSoftCertificateInfo(
+      this.caOwner, this.commonName, this.fingerprint, this.fileUrl, this.data);
 }

@@ -112,6 +112,7 @@ class DeviceCerts extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CertsModel>(
       builder: (context, m, child) => Column(children: [
+        _showProgressIndicator(m, listRef),
         Expanded(
           child: ListView.builder(
               padding: EdgeInsets.only(top: 10),
@@ -130,8 +131,7 @@ class DeviceCerts extends StatelessWidget {
                           }),
                     ),
                   )),
-        ),
-        _showProgressIndicator(m, listRef)
+        )
       ]),
     );
   }

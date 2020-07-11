@@ -39,7 +39,7 @@ class CertsModel extends ChangeNotifier {
       storeCerts[1] = [];
     }
     storeCerts[2] = [];
-    verifier = CertainTLSServerVerifier(storeCerts[0]);
+    verifier = CertainTLSServerVerifier();
     verifyAll();
   }
 

@@ -13,22 +13,28 @@ void main() async {
   await DotEnv().load('.env');
   bool uploadToDrupal = false;
   final String baseUrl = DotEnv().env['BASE_URL'] ?? drupalBaseUrl;
-  final bool ignoreLocalCerts = (DotEnv().env['IGNORE_WINDOWS_LOCAL_CERTS'] ?? false) == 'true';
+  final bool ignoreLocalCerts =
+      (DotEnv().env['IGNORE_WINDOWS_LOCAL_CERTS'] ?? false) == 'true';
   if (baseUrl != null) {
     uploadToDrupal = true;
   }
-  final authorizationEndpoint = Uri.parse(baseUrl + drupalEndpoints['oauth2_token']);
-  final identifier = Platform.environment['WIN_OAUTH2_ID'] ?? DotEnv().env['WIN_OAUTH2_ID'];
-  final secret = Platform.environment['WIN_OAUTH2_SECRET'] ?? DotEnv().env['WIN_OAUTH2_SECRET'];
+  final authorizationEndpoint =
+      Uri.parse(baseUrl + drupalEndpoints['oauth2_token']);
+  final identifier =
+      Platform.environment['WIN_OAUTH2_ID'] ?? DotEnv().env['WIN_OAUTH2_ID'];
+  final secret = Platform.environment['WIN_OAUTH2_SECRET'] ??
+      DotEnv().env['WIN_OAUTH2_SECRET'];
   final program = 'microsoft';
 
   test('Check Windows stock CA root certificates', () async {
     var finder = WindowsCertificateFinder();
+    var certs =
+        finder.getCertsByStore(WindowsCertificateFinder.systemTrustedCertsPath);
     if (!ignoreLocalCerts) {
-      finder.getCertsByStore(WindowsCertificateFinder.systemTrustedCertsPath);
-      await finder.verifyAll();
-      print('The number of root certificates found: ' + finder.localCerts.length.toString());
-      finder.localCerts.forEach((cert) {
+      await finder.verifyAll(certs);
+      print(
+          'The number of root certificates found: ' + certs.length.toString());
+      certs.forEach((cert) {
         if (cert.status != X509CertificateStatus.statusVerified) {
           print(cert.data.subject.toString() + "'s status is: " + cert.status);
         }
@@ -36,14 +42,16 @@ void main() async {
     } else {
       await finder.getRemoteTrustedStore();
     }
-    print("The number of root certificates on Microsoft's website: " + finder.onlineCerts.length.toString());
-    
+    print("The number of root certificates on Microsoft's website: " +
+        finder.onlineCerts.length.toString());
+
     if (uploadToDrupal) {
       var httpClient = await clientCredentialsGrant(
-      authorizationEndpoint, identifier, secret, basicAuth: false);
+          authorizationEndpoint, identifier, secret,
+          basicAuth: false);
       var httpHandler = DartHttp(httpClient);
       var jsonApiClient = JsonApiClient(httpHandler);
-      await syncCertsToDrupal(finder.localCerts, jsonApiClient, program, baseUrl: baseUrl);
+      await syncCertsToDrupal(certs, jsonApiClient, program, baseUrl: baseUrl);
     }
   });
 }

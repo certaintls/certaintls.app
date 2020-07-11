@@ -8,15 +8,15 @@ import 'package:pem/pem.dart';
 import 'package:certaintls/x509certificate.dart';
 import 'package:http/http.dart';
 
-class AndroidCertificateFinder implements CertificateFinder, CertificateVerifier {
+class AndroidCertificateFinder
+    implements CertificateFinder, CertificateVerifier {
   static String systemTrustedCertsPath = '/system/etc/security/cacerts';
   // https://stackoverflow.com/a/35132508/1966269
   static String userTrustedCertsPath = '/data/misc/keychain/certs-added';
 
-  List<X509Certificate> localCerts = [];
-
   @override
   List<X509Certificate> getCertsByStore(String storePath) {
+    List<X509Certificate> certs = [];
     var certsDir = new Directory(storePath);
     List<FileSystemEntity> certsList =
         certsDir.listSync(recursive: false, followLinks: false);
@@ -27,10 +27,10 @@ class AndroidCertificateFinder implements CertificateFinder, CertificateVerifier
       List<int> certData = PemCodec(PemLabel.certificate).decode(certTxt);
       String encoded = PemCodec(PemLabel.certificate).encode(certData);
       X509CertificateData data = X509Utils.x509CertificateFromPem(encoded);
-      localCerts.add(X509Certificate(data: data, filename: basename(file.path)));
+      certs.add(X509Certificate(data: data, filename: basename(file.path)));
     });
 
-    return localCerts;
+    return certs;
   }
 
   @override
@@ -76,8 +76,8 @@ class AndroidCertificateFinder implements CertificateFinder, CertificateVerifier
   }
 
   @override
-  Future verifyAll() async {
-    await Future.forEach(localCerts, (cert) async {
+  Future verifyAll(List<X509Certificate> certs) async {
+    await Future.forEach(certs, (cert) async {
       await verify(cert);
     });
   }
