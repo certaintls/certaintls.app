@@ -12,6 +12,9 @@ class X509Certificate {
   List programs = [];
   bool isTrustworthy;
 
+  /// UUID, used in entity reference
+  String remoteId;
+
   X509Certificate({@required this.data, this.filename});
 }
 

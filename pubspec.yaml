@@ -33,6 +33,8 @@ dependencies:
   oauth2: ^1.6.0
   flutter_dotenv: ^2.1.0
   provider: ^4.1.3
+  shared_preferences: ^0.5.8
+  faker: ^1.2.1
 
 dev_dependencies:
   flutter_test:

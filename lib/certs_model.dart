@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:json_api/document.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'android_certificate_finder.dart';
 import 'certaintls_server_verifier.dart';
@@ -21,6 +23,9 @@ class CertsModel extends ChangeNotifier {
   CertificateVerifier verifier;
   Map<String, String> stores;
 
+  /// Back end entity reference
+  List<Identifier> certsRef = [];
+
   CertsModel() {
     CertificateFinder finder;
     storeCerts[2] = [];
@@ -39,15 +44,17 @@ class CertsModel extends ChangeNotifier {
       storeCerts[1] = [];
     }
     storeCerts[2] = [];
-    verifier = CertainTLSServerVerifier();
-    verifyAll();
+    CertainTLSServerVerifier.build().then((verifier) => verifyAll(verifier));
   }
 
-  void verifyAll() async {
+  void verifyAll(CertainTLSServerVerifier verifier) async {
     await Future.forEach(storeCerts[0], (X509Certificate cert) async {
       await verifier.verify(cert).then((sucess) {
         if (cert.status != X509CertificateStatus.statusVerified) {
-          storeCerts[2].add(cert);
+          _addToProblemList(cert);
+        }
+        if (cert.remoteId != null) {
+          certsRef.add(Identifier('node--certificate', cert.remoteId));
         }
         progress[0]++;
         notifyListeners();
@@ -56,13 +63,40 @@ class CertsModel extends ChangeNotifier {
     await Future.forEach(storeCerts[1], (X509Certificate cert) async {
       await verifier.verify(cert).then((sucess) {
         if (cert.status != X509CertificateStatus.statusVerified) {
-          storeCerts[2].add(cert);
+          _addToProblemList(cert);
+        }
+        if (cert.remoteId != null) {
+          certsRef.add(Identifier('node--certificate', cert.remoteId));
         }
         progress[1]++;
         notifyListeners();
       });
     });
+
+    // SharedPreference isn't avaiable on Windows yet
+    if (!Platform.isWindows) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String userUuid = prefs.getString('user_id');
+      // 1. Check existing user with UUID from sharedpreference
+      if (userUuid == null || userUuid.isEmpty) {
+        // 2. Create a new user if UUID empty, and store in sharedpreference
+        userUuid = await verifier.createDevice(certsRef);
+        prefs.setString('user_id', userUuid);
+        // TODO: 3. Check/Upload unknown certs
+      } else {
+        // TODO: 3. Check/Upload unknown certs
+        // 4. Update device info.
+        await verifier.updateDevice(userUuid, certsRef);
+      }
+    }
   }
 
   Map<String, String> getStores() => stores;
+
+  void _addToProblemList(X509Certificate cert) {
+    storeCerts[2].add(cert);
+    if (cert.status == X509CertificateStatus.statusUnverifiable) {
+      // Send to Drupal
+    }
+  }
 }

@@ -16,6 +16,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   int _selectedIndex = 0;
+  bool _uploadData = true;
 
   @override
   void initState() {
@@ -99,7 +100,18 @@ class _MyAppState extends State<MyApp> {
     showAboutDialog(
         context: ctx,
         applicationVersion: '1.1.0+2',
-        applicationIcon: Image.asset('images/logo.png'));
+        applicationIcon: Image.asset('images/logo.png'),
+        children: [
+          Text(
+              'By default, CertainTLS will collect device OS meta data and certificates fingerprints for analysis. You can optionally provide your name below:'),
+          //TextField(decoration: InputDecoration(hintText: 'Your name or email')),
+          SizedBox(height: 20),
+          Row(children: [
+            Text('Disable data collection:'),
+            Switch(value: _uploadData, onChanged: null)
+          ]),
+          Text('This is not available intentionally for early testers.'),
+        ]);
   }
 }
 
