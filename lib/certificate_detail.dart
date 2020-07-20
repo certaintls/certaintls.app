@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:android_intent/android_intent.dart';
 import 'package:basic_utils/basic_utils.dart';
 import 'package:certaintls/x509certificate.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,12 @@ class CertificateDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     X509CertificateData data = cert.data;
     return Scaffold(
+        floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => _handleDisableAction(context, cert),
+            icon: Icon(Icons.delete_forever),
+            label: Text('Disable'),
+            backgroundColor: Colors.red),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
         appBar: AppBar(
           title: Text(getTitle(data)),
         ),
@@ -34,8 +41,11 @@ class CertificateDetail extends StatelessWidget {
                         generateStatusIcon(cert.status),
                         Text(cert.status.toUpperCase(),
                             style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text(' -- ' + cert.programs.toString())
                       ]),
+                      Text('Root Certificate Authority Programs:',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(cert.programs.join(', ').toUpperCase()),
+                      SizedBox(height: 10),
                       Text('Issued to:',
                           style: TextStyle(fontWeight: FontWeight.bold)),
                       SizedBox(height: 5),
@@ -109,4 +119,28 @@ class CertificateDetail extends StatelessWidget {
 String getPrettyJSONString(jsonObject) {
   var encoder = new JsonEncoder.withIndent("     ");
   return encoder.convert(jsonObject);
+}
+
+void _handleDisableAction(BuildContext ctx, X509Certificate cert) {
+  showDialog(
+      context: ctx,
+      builder: (_) => AlertDialog(
+            title: Text('Disable ' + getTitle(cert.data) + '?'),
+            content: Text(
+                'Disabling certificate on Android through third party is not supported by the system.'),
+            actions: [
+              FlatButton(
+                  onPressed: () => {Navigator.pop(ctx)}, child: Text('No')),
+              FlatButton(
+                  onPressed: () => _launchAndroidIntent(), child: Text('Yes'))
+            ],
+          ),
+      barrierDismissible: false);
+}
+
+void _launchAndroidIntent() {
+  final AndroidIntent intent = AndroidIntent(
+    action: 'android.settings.SECURITY_SETTINGS',
+  );
+  intent.launch();
 }
