@@ -22,6 +22,7 @@ class CertsModel extends ChangeNotifier {
   List<int> progress = [0, 0];
   CertificateVerifier verifier;
   Map<String, String> stores;
+  String noUserCertsHelperText = 'No user installed certificates are found!';
 
   /// Back end entity reference
   List<Identifier> certsRef = [];
@@ -31,6 +32,9 @@ class CertsModel extends ChangeNotifier {
     storeCerts[2] = [];
     if (Platform.isAndroid) {
       finder = AndroidCertificateFinder();
+      noUserCertsHelperText =
+          "Due to Android security model, third party apps like CertainTLS do not have access to the user installed certificates.\n\n"
+          "However, a user can view the installer certificates via Android system UI:\n\n";
     } else if (Platform.isMacOS) {
       finder = MacOSCertificateFinder();
     } else if (Platform.isWindows) {
@@ -96,7 +100,7 @@ class CertsModel extends ChangeNotifier {
   void _addToProblemList(X509Certificate cert) {
     storeCerts[2].add(cert);
     if (cert.status == X509CertificateStatus.statusUnverifiable) {
-      // Send to Drupal
+      // TODO: Send to Drupal
     }
   }
 }

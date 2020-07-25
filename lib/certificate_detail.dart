@@ -127,7 +127,8 @@ void _handleDisableAction(BuildContext ctx, X509Certificate cert) {
       builder: (_) => AlertDialog(
             title: Text('Disable ' + getTitle(cert.data) + '?'),
             content: Text(
-                'Disabling certificate on Android through third party is not supported by the system.'),
+                'Disabling certificate on Android through third party is not supported by the system.\n\n'
+                'However, CertainTLS cannot detect if you have disabled any certificates on Android.'),
             actions: [
               FlatButton(
                   onPressed: () => {Navigator.pop(ctx)}, child: Text('No')),
@@ -140,7 +141,7 @@ void _handleDisableAction(BuildContext ctx, X509Certificate cert) {
 
 void _launchAndroidIntent() {
   final AndroidIntent intent = AndroidIntent(
-    action: 'android.settings.SECURITY_SETTINGS',
+    action: 'com.android.settings.TRUSTED_CREDENTIALS',
   );
   intent.launch();
 }

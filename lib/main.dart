@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:android_intent/android_intent.dart';
 import 'package:certaintls/certificate_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -126,24 +128,56 @@ class DeviceCerts extends StatelessWidget {
       builder: (context, m, child) => Column(children: [
         _showProgressIndicator(m, listRef),
         Expanded(
-          child: ListView.builder(
-              padding: EdgeInsets.only(top: 10),
-              itemCount: m.storeCerts[listRef].length,
-              itemBuilder: (context, i) => Hero(
-                    tag: i,
-                    child: Material(
-                      child: GestureDetector(
-                          child: CertificateTile(m.storeCerts[listRef][i]),
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => CertificateDetail(
-                                        m.storeCerts[listRef][i], i)));
-                          }),
-                    ),
-                  )),
-        )
+            child: m.storeCerts[listRef].isNotEmpty
+                ? ListView.builder(
+                    padding: EdgeInsets.only(top: 10),
+                    itemCount: m.storeCerts[listRef].length,
+                    itemBuilder: (context, i) => Hero(
+                          tag: i,
+                          child: Material(
+                            child: GestureDetector(
+                                child:
+                                    CertificateTile(m.storeCerts[listRef][i]),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              CertificateDetail(
+                                                  m.storeCerts[listRef][i],
+                                                  i)));
+                                }),
+                          ),
+                        ))
+                : Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Center(
+                        child: Wrap(children: [
+                      Text(
+                        m.noUserCertsHelperText,
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      Platform.isAndroid
+                          ? Row(
+                              children: [
+                                RaisedButton(
+                                    onPressed: () {
+                                      final AndroidIntent intent =
+                                          AndroidIntent(
+                                        action:
+                                            'com.android.settings.TRUSTED_CREDENTIALS_USER',
+                                      );
+                                      intent.launch();
+                                    },
+                                    child: Text(
+                                        'View installed certificates via System UI')),
+                                SizedBox(width: 20),
+                                Icon(Icons.android,
+                                    color: Color.fromRGBO(164, 198, 57, 1))
+                              ],
+                            )
+                          : SizedBox.shrink()
+                    ]))))
       ]),
     );
   }
