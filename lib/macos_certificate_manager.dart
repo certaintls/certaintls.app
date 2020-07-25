@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:async/async.dart';
 import 'package:basic_utils/basic_utils.dart';
+import 'package:certaintls/certificate_distruster.dart';
 import 'package:certaintls/certificate_finder.dart';
 import 'package:certaintls/certificate_verifier.dart';
 import 'package:certaintls/x509certificate.dart';
@@ -8,7 +9,8 @@ import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart';
 
-class MacOSCertificateFinder implements CertificateFinder, CertificateVerifier {
+class MacOSCertificateManager
+    implements CertificateFinder, CertificateVerifier, CertificateDistruster {
   static String systemTrustedCertsPath =
       '/System/Library/Keychains/SystemRootCertificates.keychain';
   static String userInstalledCertsPath = '/Library/Keychains/System.keychain';
@@ -106,6 +108,14 @@ class MacOSCertificateFinder implements CertificateFinder, CertificateVerifier {
       'System Root Certificates': systemTrustedCertsPath,
       'User Installed Certificates': userInstalledCertsPath
     };
+  }
+
+  /// Method recommended by https://apple.stackexchange.com/a/45626
+  @override
+  bool distrust(X509Certificate cert, String storePath) {
+    ProcessResult results = Process.runSync('security',
+        ['delete-certificate', '-Z', cert.data.sha1Thumbprint, storePath]);
+    return true;
   }
 }
 

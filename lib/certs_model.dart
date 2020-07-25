@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:certaintls/certificate_distruster.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:json_api/document.dart';
@@ -9,7 +10,7 @@ import 'android_certificate_finder.dart';
 import 'certaintls_server_verifier.dart';
 import 'certificate_finder.dart';
 import 'certificate_verifier.dart';
-import 'macos_certificate_finder.dart';
+import 'macos_certificate_manager.dart';
 import 'windows_certificate_finder.dart';
 import 'x509certificate.dart';
 
@@ -21,6 +22,7 @@ class CertsModel extends ChangeNotifier {
   List<List<X509Certificate>> storeCerts = List(3);
   List<int> progress = [0, 0];
   CertificateVerifier verifier;
+  CertificateDistruster distruster;
   Map<String, String> stores;
   String noUserCertsHelperText = 'No user installed certificates are found!';
 
@@ -36,9 +38,12 @@ class CertsModel extends ChangeNotifier {
           "Due to Android security model, third party apps like CertainTLS do not have access to the user installed certificates.\n\n"
           "However, a user can view the installer certificates via Android system UI:\n\n";
     } else if (Platform.isMacOS) {
-      finder = MacOSCertificateFinder();
+      var manager = MacOSCertificateManager();
+      verifier = manager;
+      distruster = manager;
     } else if (Platform.isWindows) {
-      finder = WindowsCertificateFinder();
+      var manager = WindowsCertificateFinder();
+      verifier = manager;
     }
     stores = finder.getCertStores();
     storeCerts[0] = finder.getCertsByStore(stores.values.toList()[0]);

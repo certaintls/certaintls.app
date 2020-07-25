@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:android_intent/android_intent.dart';
 import 'package:basic_utils/basic_utils.dart';
+import 'package:certaintls/certificate_distruster.dart';
+import 'package:certaintls/macos_certificate_manager.dart';
 import 'package:certaintls/x509certificate.dart';
 import 'package:flutter/material.dart';
 
@@ -9,8 +12,9 @@ class CertificateDetail extends StatelessWidget {
   final X509Certificate cert;
   // Needed for hero animation
   final int index;
+  final CertificateDistruster distruster;
 
-  CertificateDetail(this.cert, this.index);
+  CertificateDetail(this.cert, this.index, this.distruster);
 
   @override
   Widget build(BuildContext context) {
@@ -114,29 +118,37 @@ class CertificateDetail extends StatelessWidget {
           ),
         ));
   }
+
+  void _handleDisableAction(BuildContext ctx, X509Certificate cert) {
+    showDialog(
+        context: ctx,
+        builder: (_) => AlertDialog(
+              title: Text('Disable ' + getTitle(cert.data) + '?'),
+              content: Text(
+                  'Disabling certificate on Android through third party is not supported by the system.\n\n'
+                  'However, CertainTLS cannot detect if you have disabled any certificates on Android.'),
+              actions: [
+                FlatButton(
+                    onPressed: () => {Navigator.pop(ctx)}, child: Text('No')),
+                FlatButton(onPressed: () => _distrust(), child: Text('Yes'))
+              ],
+            ),
+        barrierDismissible: false);
+  }
+
+  void _distrust() {
+    if (Platform.isAndroid) {
+      _launchAndroidIntent();
+    } else {
+      var success = distruster.distrust(
+          cert, MacOSCertificateManager.systemTrustedCertsPath);
+    }
+  }
 }
 
 String getPrettyJSONString(jsonObject) {
   var encoder = new JsonEncoder.withIndent("     ");
   return encoder.convert(jsonObject);
-}
-
-void _handleDisableAction(BuildContext ctx, X509Certificate cert) {
-  showDialog(
-      context: ctx,
-      builder: (_) => AlertDialog(
-            title: Text('Disable ' + getTitle(cert.data) + '?'),
-            content: Text(
-                'Disabling certificate on Android through third party is not supported by the system.\n\n'
-                'However, CertainTLS cannot detect if you have disabled any certificates on Android.'),
-            actions: [
-              FlatButton(
-                  onPressed: () => {Navigator.pop(ctx)}, child: Text('No')),
-              FlatButton(
-                  onPressed: () => _launchAndroidIntent(), child: Text('Yes'))
-            ],
-          ),
-      barrierDismissible: false);
 }
 
 void _launchAndroidIntent() {

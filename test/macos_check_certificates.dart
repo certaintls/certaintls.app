@@ -1,6 +1,6 @@
 @Timeout(const Duration(seconds: 1800))
 
-import 'package:certaintls/macos_certificate_finder.dart';
+import 'package:certaintls/macos_certificate_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:json_api/client.dart';
 import 'package:oauth2/oauth2.dart';
@@ -24,9 +24,9 @@ void main() async {
   final program = 'apple';
 
   test('Check MacOS stock CA root certificates', () async {
-    var finder = MacOSCertificateFinder();
+    var finder = MacOSCertificateManager();
     var certs =
-        finder.getCertsByStore(MacOSCertificateFinder.systemTrustedCertsPath);
+        finder.getCertsByStore(MacOSCertificateManager.systemTrustedCertsPath);
     await finder.verifyAll(certs);
     print('The number of root certificates found: ' + certs.length.toString());
     print("The number of root certificates on Apple's website: " +

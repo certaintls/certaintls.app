@@ -145,7 +145,8 @@ class DeviceCerts extends StatelessWidget {
                                           builder: (context) =>
                                               CertificateDetail(
                                                   m.storeCerts[listRef][i],
-                                                  i)));
+                                                  i,
+                                                  m.distruster)));
                                 }),
                           ),
                         ))
