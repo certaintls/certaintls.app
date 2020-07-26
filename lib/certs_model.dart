@@ -39,10 +39,12 @@ class CertsModel extends ChangeNotifier {
           "However, a user can view the installer certificates via Android system UI:\n\n";
     } else if (Platform.isMacOS) {
       var manager = MacOSCertificateManager();
+      finder = manager;
       verifier = manager;
       distruster = manager;
     } else if (Platform.isWindows) {
       var manager = WindowsCertificateFinder();
+      finder = manager;
       verifier = manager;
     }
     stores = finder.getCertStores();

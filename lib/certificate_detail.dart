@@ -130,18 +130,32 @@ class CertificateDetail extends StatelessWidget {
               actions: [
                 FlatButton(
                     onPressed: () => {Navigator.pop(ctx)}, child: Text('No')),
-                FlatButton(onPressed: () => _distrust(), child: Text('Yes'))
+                FlatButton(onPressed: () => _distrust(ctx), child: Text('Yes'))
               ],
             ),
         barrierDismissible: false);
   }
 
-  void _distrust() {
+  void _distrust(BuildContext ctx) {
     if (Platform.isAndroid) {
       _launchAndroidIntent();
     } else {
-      var success = distruster.distrust(
+      var result = distruster.distrust(
           cert, MacOSCertificateManager.systemTrustedCertsPath);
+      if (result.stderr.isEmpty) {
+      } else {
+        showDialog(
+            context: ctx,
+            builder: (_) => AlertDialog(
+                  title: Text('Failed to distrust' + getTitle(cert.data) + '!'),
+                  content: Text(result.stderr),
+                  actions: [
+                    FlatButton(
+                        onPressed: () => {Navigator.pop(ctx)},
+                        child: Text('OK'))
+                  ],
+                ));
+      }
     }
   }
 }
