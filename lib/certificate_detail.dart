@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:android_intent/android_intent.dart';
 import 'package:basic_utils/basic_utils.dart';
 import 'package:certaintls/certificate_distruster.dart';
-import 'package:certaintls/macos_certificate_manager.dart';
 import 'package:certaintls/x509certificate.dart';
 import 'package:flutter/material.dart';
 
@@ -69,30 +68,34 @@ class CertificateDetail extends StatelessWidget {
                       Text(data.subject[X509Utils.DN['countryName']] ?? ''),
                       SizedBox(height: 10),
                       Text('Serial number:'),
-                      Text(data.serialNumber.toString()),
+                      Text(data.serialNumber?.toString()),
                       SizedBox(height: 20),
                       Text('Issued by:',
                           style: TextStyle(fontWeight: FontWeight.bold)),
                       SizedBox(height: 5),
                       Text('Common name:'),
-                      Text(data.issuer[X509Utils.DN['commonName']] ?? ''),
+                      Text((data.issuer ?? {})[X509Utils.DN['commonName']] ??
+                          ''),
                       SizedBox(height: 10),
                       Text('Organization:'),
-                      Text(data.issuer[X509Utils.DN['organizationName']] ?? ''),
+                      Text((data.issuer ??
+                              {})[X509Utils.DN['organizationName']] ??
+                          ''),
                       SizedBox(height: 10),
                       Text('Organization unit:'),
-                      Text(
-                          data.issuer[X509Utils.DN['organizationalUnitName']] ??
-                              ''),
+                      Text((data.issuer ??
+                              {})[X509Utils.DN['organizationalUnitName']] ??
+                          ''),
                       SizedBox(height: 20),
                       Text('Validity:',
                           style: TextStyle(fontWeight: FontWeight.bold)),
                       SizedBox(height: 5),
                       Text('Issued on:'),
-                      Text(data.validity.notBefore.toLocal().toString()),
+                      Text(data.validity?.notBefore?.toLocal()?.toString() ??
+                          ''),
                       SizedBox(height: 10),
                       Text('Expires on:'),
-                      Text(data.validity.notAfter.toLocal().toString()),
+                      Text(data.validity?.notAfter?.toLocal().toString() ?? ''),
                       SizedBox(height: 20),
                       Text('Fingerprints:',
                           style: TextStyle(fontWeight: FontWeight.bold)),
@@ -109,7 +112,7 @@ class CertificateDetail extends StatelessWidget {
                       SizedBox(height: 10),
                       Text('Subject Public Key Info (SPKI) fingerprint:'),
                       Text(StringUtils.addCharAtPosition(
-                          data.publicKeyData.sha256Thumbprint, ' ', 2,
+                          data.publicKeyData?.sha256Thumbprint, ' ', 2,
                           repeat: true)),
                       SizedBox(height: 10),
                     ]),
@@ -149,10 +152,12 @@ class CertificateDetail extends StatelessWidget {
             builder: (_) => AlertDialog(
                   title:
                       Text('Failed to distrust ' + getTitle(cert.data) + '!'),
-                  content: Text(result.stderr +
+                  content: Text('Error: ' +
+                      result.stderr +
                       '\n\n'
-                          'You can either close CertainTLS and re-run it as root or \n'
-                          'execute the below command manually:\n'
+                          'You can either \n'
+                          '1. Close CertainTLS and re-run it as root or \n'
+                          '2. Execute the below command manually:\n\n'
                           'sudo security delete-certificate -Z ' +
                       cert.data.sha1Thumbprint),
                   actions: [

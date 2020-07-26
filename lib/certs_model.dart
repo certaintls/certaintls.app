@@ -25,6 +25,7 @@ class CertsModel extends ChangeNotifier {
   CertificateDistruster distruster;
   Map<String, String> stores;
   String noUserCertsHelperText = 'No user installed certificates are found!';
+  String deleteCertConfirmText = '';
 
   /// Back end entity reference
   List<Identifier> certsRef = [];
@@ -37,11 +38,17 @@ class CertsModel extends ChangeNotifier {
       noUserCertsHelperText =
           "Due to Android security model, third party apps like CertainTLS do not have access to the user installed certificates.\n\n"
           "However, a user can view the installer certificates via Android system UI:\n\n";
+      deleteCertConfirmText =
+          'Disabling certificate on Android through third party is not supported by the system.\n\n'
+          'However, CertainTLS cannot detect if you have disabled any certificates on Android.';
     } else if (Platform.isMacOS) {
       var manager = MacOSCertificateManager();
       finder = manager;
       verifier = manager;
       distruster = manager;
+      deleteCertConfirmText =
+          'Deleting a certificate on MacOS requires root permission. You can either close and re-run CertainTLS as root or'
+          ' manually run the command at the next step.';
     } else if (Platform.isWindows) {
       var manager = WindowsCertificateFinder();
       finder = manager;
