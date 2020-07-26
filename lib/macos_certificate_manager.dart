@@ -112,9 +112,9 @@ class MacOSCertificateManager
 
   /// Method recommended by https://apple.stackexchange.com/a/45626
   @override
-  ProcessResult distrust(X509Certificate cert, String storePath) {
-    return Process.runSync('security',
-        ['delete-certificate', '-Z', cert.data.sha1Thumbprint, storePath]);
+  ProcessResult distrust(X509Certificate cert) {
+    return Process.runSync(
+        'security', ['delete-certificate', '-Z', cert.data.sha1Thumbprint]);
   }
 }
 

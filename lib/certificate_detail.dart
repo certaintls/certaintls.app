@@ -140,15 +140,21 @@ class CertificateDetail extends StatelessWidget {
     if (Platform.isAndroid) {
       _launchAndroidIntent();
     } else {
-      var result = distruster.distrust(
-          cert, MacOSCertificateManager.systemTrustedCertsPath);
+      var result = distruster.distrust(cert);
       if (result.stderr.isEmpty) {
+        Navigator.pop(ctx);
       } else {
         showDialog(
             context: ctx,
             builder: (_) => AlertDialog(
-                  title: Text('Failed to distrust' + getTitle(cert.data) + '!'),
-                  content: Text(result.stderr),
+                  title:
+                      Text('Failed to distrust ' + getTitle(cert.data) + '!'),
+                  content: Text(result.stderr +
+                      '\n\n'
+                          'You can either close CertainTLS and re-run it as root or \n'
+                          'execute the below command manually:\n'
+                          'sudo security delete-certificate -Z ' +
+                      cert.data.sha1Thumbprint),
                   actions: [
                     FlatButton(
                         onPressed: () => {Navigator.pop(ctx)},

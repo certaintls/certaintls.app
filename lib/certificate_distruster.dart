@@ -7,5 +7,5 @@ import 'x509certificate.dart';
 /// MacOS calls the action "Delete" (Once a certificate is deleted, it is gone)
 /// Windows calls the action "Revoke", but there is no "Reinstate"
 abstract class CertificateDistruster {
-  ProcessResult distrust(X509Certificate cert, String storePath);
+  ProcessResult distrust(X509Certificate cert);
 }
