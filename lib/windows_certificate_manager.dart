@@ -168,7 +168,7 @@ class WindowsCertificateManager
   ProcessResult distrust(X509Certificate cert) {
     // Command doc: https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/certutil#-revoke
     return Process.runSync(
-        'CertUtil', ['-revoke', cert.data.serialNumber.toString()]);
+        'CertUtil', ['-revoke', cert.data.serialNumber.toRadixString(16)]);
   }
 
   @override
@@ -177,7 +177,7 @@ class WindowsCertificateManager
             '1. Close CertainTLS and re-run it as root or \n'
             '2. Execute the below command manually:\n\n'
             'CertUtil -revoke ' +
-        cert.data.serialNumber.toString();
+        cert.data.serialNumber.toRadixString(16);
   }
 }
 

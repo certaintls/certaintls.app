@@ -68,7 +68,12 @@ class CertificateDetail extends StatelessWidget {
                       Text(data.subject[X509Utils.DN['countryName']] ?? ''),
                       SizedBox(height: 10),
                       Text('Serial number:'),
-                      Text(data.serialNumber?.toString() ?? ''),
+                      Text(StringUtils.addCharAtPosition(
+                          data.serialNumber?.toRadixString(16)?.toUpperCase() ??
+                              '',
+                          ' ',
+                          2,
+                          repeat: true)),
                       SizedBox(height: 20),
                       Text('Issued by:',
                           style: TextStyle(fontWeight: FontWeight.bold)),
@@ -145,7 +150,7 @@ class CertificateDetail extends StatelessWidget {
       _launchAndroidIntent();
     } else {
       var result = distruster.distrust(cert);
-      if (result.stderr.isEmpty) {
+      if (result.stderr.isEmpty && result.exitCode > 0) {
         Navigator.pop(ctx);
       } else {
         showDialog(
@@ -153,8 +158,10 @@ class CertificateDetail extends StatelessWidget {
             builder: (_) => AlertDialog(
                   title:
                       Text('Failed to distrust ' + getTitle(cert.data) + '!'),
-                  content: Text('Error: ' +
+                  content: SelectableText('Error: ' +
                       result.stderr +
+                      ' ' +
+                      result.stdout +
                       '\n\n' +
                       distruster.getManualInstruction(cert)),
                   actions: [
