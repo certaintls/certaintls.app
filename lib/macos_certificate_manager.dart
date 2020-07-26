@@ -116,6 +116,15 @@ class MacOSCertificateManager
     return Process.runSync(
         'security', ['delete-certificate', '-Z', cert.data.sha1Thumbprint]);
   }
+
+  @override
+  String getManualInstruction(X509Certificate cert) {
+    return 'You can either \n'
+            '1. Close CertainTLS and re-run it as root or \n'
+            '2. Execute the below command manually:\n\n'
+            'sudo security delete-certificate -Z ' +
+        cert.data.sha1Thumbprint;
+  }
 }
 
 class AppleCertificateInfo {

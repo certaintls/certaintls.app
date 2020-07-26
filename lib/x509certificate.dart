@@ -61,8 +61,9 @@ Future<X509CertificateData> certDownload(String url, {Client client}) async {
     return null;
 }
 
-String getTitle(X509CertificateData data) =>
-    getOrg(data) + ' (' + (getCountry(data) ?? '') + ')';
+String getTitle(X509CertificateData data) => getCountry(data) != null
+    ? getOrg(data) + ' (' + getCountry(data) + ')'
+    : getOrg(data);
 
 String getSubtitle(X509CertificateData data) => getCommonName(data);
 

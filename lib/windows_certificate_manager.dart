@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:async/async.dart';
 import 'package:basic_utils/basic_utils.dart';
+import 'package:certaintls/certificate_distruster.dart';
 import 'package:certaintls/certificate_finder.dart';
 import 'package:certaintls/certificate_verifier.dart';
 import 'package:certaintls/x509certificate.dart';
@@ -10,8 +11,8 @@ import 'package:html/parser.dart';
 import 'package:http/http.dart';
 import 'package:pem/pem.dart';
 
-class WindowsCertificateFinder
-    implements CertificateFinder, CertificateVerifier {
+class WindowsCertificateManager
+    implements CertificateFinder, CertificateVerifier, CertificateDistruster {
   static String systemTrustedCertsPath = 'Root';
   static String userInstalledCertsPath = 'My';
   static RegExp delimiter =
@@ -44,10 +45,11 @@ class WindowsCertificateFinder
         subject.putIfAbsent('2.5.4.11', () => tokenize(s, 'OU='));
         subject.putIfAbsent('2.5.4.6', () => tokenize(s, ' C='));
         X509CertificateData data = X509CertificateData(
-          sha1Thumbprint: tokenize(s, 'Cert Hash(sha1): ').toUpperCase(),
-          sha256Thumbprint: tokenize(s, 'Cert Hash(sha256): ').toUpperCase(),
-          subject: subject,
-        );
+            sha1Thumbprint: tokenize(s, 'Cert Hash(sha1): ').toUpperCase(),
+            sha256Thumbprint: tokenize(s, 'Cert Hash(sha256): ').toUpperCase(),
+            subject: subject,
+            serialNumber:
+                BigInt.parse(tokenize(s, 'Serial Number: '), radix: 16));
         certs.add(X509Certificate(data: data));
       }
     });
@@ -160,6 +162,22 @@ class WindowsCertificateFinder
       return X509Utils.x509CertificateFromPem(onlinePEM);
     } else
       return null;
+  }
+
+  @override
+  ProcessResult distrust(X509Certificate cert) {
+    // Command doc: https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/certutil#-revoke
+    return Process.runSync(
+        'CertUtil', ['-revoke', cert.data.serialNumber.toString()]);
+  }
+
+  @override
+  String getManualInstruction(X509Certificate cert) {
+    return 'You can either \n'
+            '1. Close CertainTLS and re-run it as root or \n'
+            '2. Execute the below command manually:\n\n'
+            'CertUtil -revoke ' +
+        cert.data.serialNumber.toString();
   }
 }
 

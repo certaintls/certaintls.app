@@ -9,9 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'android_certificate_finder.dart';
 import 'certaintls_server_verifier.dart';
 import 'certificate_finder.dart';
-import 'certificate_verifier.dart';
 import 'macos_certificate_manager.dart';
-import 'windows_certificate_finder.dart';
+import 'windows_certificate_manager.dart';
 import 'x509certificate.dart';
 
 /// storeCerts[0] is the root certs
@@ -21,11 +20,9 @@ class CertsModel extends ChangeNotifier {
   // The third list contains the problematic certs
   List<List<X509Certificate>> storeCerts = List(3);
   List<int> progress = [0, 0];
-  CertificateVerifier verifier;
   CertificateDistruster distruster;
   Map<String, String> stores;
   String noUserCertsHelperText = 'No user installed certificates are found!';
-  String deleteCertConfirmText = '';
 
   /// Back end entity reference
   List<Identifier> certsRef = [];
@@ -38,21 +35,14 @@ class CertsModel extends ChangeNotifier {
       noUserCertsHelperText =
           "Due to Android security model, third party apps like CertainTLS do not have access to the user installed certificates.\n\n"
           "However, a user can view the installer certificates via Android system UI:\n\n";
-      deleteCertConfirmText =
-          'Disabling certificate on Android through third party is not supported by the system.\n\n'
-          'However, CertainTLS cannot detect if you have disabled any certificates on Android.';
     } else if (Platform.isMacOS) {
       var manager = MacOSCertificateManager();
       finder = manager;
-      verifier = manager;
       distruster = manager;
-      deleteCertConfirmText =
-          'Deleting a certificate on MacOS requires root permission. You can either close and re-run CertainTLS as root or'
-          ' manually run the command at the next step.';
     } else if (Platform.isWindows) {
-      var manager = WindowsCertificateFinder();
+      var manager = WindowsCertificateManager();
       finder = manager;
-      verifier = manager;
+      distruster = manager;
     }
     stores = finder.getCertStores();
     storeCerts[0] = finder.getCertsByStore(stores.values.toList()[0]);

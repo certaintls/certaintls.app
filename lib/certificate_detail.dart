@@ -22,7 +22,7 @@ class CertificateDetail extends StatelessWidget {
         floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _handleDisableAction(context, cert),
             icon: Icon(Icons.delete_forever),
-            label: Text('Disable'),
+            label: Text('Distrust'),
             backgroundColor: Colors.red),
         floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
         appBar: AppBar(
@@ -68,7 +68,7 @@ class CertificateDetail extends StatelessWidget {
                       Text(data.subject[X509Utils.DN['countryName']] ?? ''),
                       SizedBox(height: 10),
                       Text('Serial number:'),
-                      Text(data.serialNumber?.toString()),
+                      Text(data.serialNumber?.toString() ?? ''),
                       SizedBox(height: 20),
                       Text('Issued by:',
                           style: TextStyle(fontWeight: FontWeight.bold)),
@@ -102,7 +102,7 @@ class CertificateDetail extends StatelessWidget {
                       SizedBox(height: 5),
                       Text('SHA-256 fingerprint:'),
                       Text(StringUtils.addCharAtPosition(
-                          data.publicKeyData.sha256Thumbprint, ' ', 2,
+                          data.publicKeyData?.sha256Thumbprint ?? '', ' ', 2,
                           repeat: true)),
                       SizedBox(height: 10),
                       Text('SHA-1 fingerprint:'),
@@ -112,7 +112,7 @@ class CertificateDetail extends StatelessWidget {
                       SizedBox(height: 10),
                       Text('Subject Public Key Info (SPKI) fingerprint:'),
                       Text(StringUtils.addCharAtPosition(
-                          data.publicKeyData?.sha256Thumbprint, ' ', 2,
+                          data.publicKeyData?.sha256Thumbprint ?? '', ' ', 2,
                           repeat: true)),
                       SizedBox(height: 10),
                     ]),
@@ -127,9 +127,10 @@ class CertificateDetail extends StatelessWidget {
         context: ctx,
         builder: (_) => AlertDialog(
               title: Text('Disable ' + getTitle(cert.data) + '?'),
-              content: Text(
-                  'Disabling certificate on Android through third party is not supported by the system.\n\n'
-                  'However, CertainTLS cannot detect if you have disabled any certificates on Android.'),
+              content: Text(Platform.isAndroid
+                  ? 'Disabling certificate on Android through third party is not supported by the system.\n\n'
+                      'However, CertainTLS cannot detect if you have disabled any certificates on Android.'
+                  : 'Confirm?'),
               actions: [
                 FlatButton(
                     onPressed: () => {Navigator.pop(ctx)}, child: Text('No')),
@@ -154,12 +155,8 @@ class CertificateDetail extends StatelessWidget {
                       Text('Failed to distrust ' + getTitle(cert.data) + '!'),
                   content: Text('Error: ' +
                       result.stderr +
-                      '\n\n'
-                          'You can either \n'
-                          '1. Close CertainTLS and re-run it as root or \n'
-                          '2. Execute the below command manually:\n\n'
-                          'sudo security delete-certificate -Z ' +
-                      cert.data.sha1Thumbprint),
+                      '\n\n' +
+                      distruster.getManualInstruction(cert)),
                   actions: [
                     FlatButton(
                         onPressed: () => {Navigator.pop(ctx)},

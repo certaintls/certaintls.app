@@ -10,29 +10,39 @@ class CertificateTile extends StatelessWidget {
   Widget build(BuildContext context) {
     X509CertificateData data = cert.data;
     String commonName = getCommonName(data);
-    String org = getOrg(data);
-    String country = getCountry(data) != null ? ' (' + getCountry(data)+ ')' : '';
-    var title = Text(org + country);
+    var title = Text(getTitle(data));
     var subtitle = Text(commonName);
 
-    return ListTile(title: title, subtitle: subtitle,
-      leading: _generateStatusIcon(cert.status),
-      trailing: Container(
-        width: 56,
-        child: GridView.count(
-          crossAxisCount: 2,
-          mainAxisSpacing: 6.0,
-          crossAxisSpacing: 6.0,
-          padding: const EdgeInsets.all(8.0),
-          children: [
-            Image.asset('images/google.png', color: cert.programs.contains('google') ? null : Colors.grey[300]),
-            Image.asset('images/microsoft.png', color: cert.programs.contains('microsoft') ? null : Colors.grey[300]),
-            Image.asset('images/apple.png', color: cert.programs.contains('apple') ? null : Colors.grey[300]),
-            Image.asset('images/mozilla.png', color: cert.programs.contains('mozilla') ? null : Colors.grey[300]),
-          ],
-        )
-      )
-    );
+    return ListTile(
+        title: title,
+        subtitle: subtitle,
+        leading: _generateStatusIcon(cert.status),
+        trailing: Container(
+            width: 56,
+            child: GridView.count(
+              crossAxisCount: 2,
+              mainAxisSpacing: 6.0,
+              crossAxisSpacing: 6.0,
+              padding: const EdgeInsets.all(8.0),
+              children: [
+                Image.asset('images/google.png',
+                    color: cert.programs.contains('google')
+                        ? null
+                        : Colors.grey[300]),
+                Image.asset('images/microsoft.png',
+                    color: cert.programs.contains('microsoft')
+                        ? null
+                        : Colors.grey[300]),
+                Image.asset('images/apple.png',
+                    color: cert.programs.contains('apple')
+                        ? null
+                        : Colors.grey[300]),
+                Image.asset('images/mozilla.png',
+                    color: cert.programs.contains('mozilla')
+                        ? null
+                        : Colors.grey[300]),
+              ],
+            )));
   }
 
   Widget _generateStatusIcon(String status) {
@@ -57,25 +67,19 @@ class CertificateTile extends StatelessWidget {
         iconDisplay = Icon(Icons.priority_high, color: Colors.yellow[500]);
         break;
     }
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        IconButton(
-          icon: iconDisplay,
-          onPressed: null,
-        ),
-        SizedBox(
+    return Stack(alignment: Alignment.center, children: [
+      IconButton(
+        icon: iconDisplay,
+        onPressed: null,
+      ),
+      SizedBox(
           height: 24.0,
           width: 24.0,
           child: Visibility(
-            visible: isInProgress,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-            )
-          )
-        )
-      ]
-    );
+              visible: isInProgress,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+              )))
+    ]);
   }
-
 }

@@ -1,6 +1,6 @@
 @Timeout(const Duration(seconds: 1800))
 
-import 'package:certaintls/windows_certificate_finder.dart';
+import 'package:certaintls/windows_certificate_manager.dart';
 import 'package:certaintls/x509certificate.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:test/test.dart';
@@ -27,9 +27,9 @@ void main() async {
   final program = 'microsoft';
 
   test('Check Windows stock CA root certificates', () async {
-    var finder = WindowsCertificateFinder();
-    var certs =
-        finder.getCertsByStore(WindowsCertificateFinder.systemTrustedCertsPath);
+    var finder = WindowsCertificateManager();
+    var certs = finder
+        .getCertsByStore(WindowsCertificateManager.systemTrustedCertsPath);
     if (!ignoreLocalCerts) {
       await finder.verifyAll(certs);
       print(

@@ -8,4 +8,5 @@ import 'x509certificate.dart';
 /// Windows calls the action "Revoke", but there is no "Reinstate"
 abstract class CertificateDistruster {
   ProcessResult distrust(X509Certificate cert);
+  String getManualInstruction(X509Certificate cert);
 }
