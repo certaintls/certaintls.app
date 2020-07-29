@@ -101,7 +101,7 @@ class _MyAppState extends State<MyApp> {
   void _showAboutDialog(BuildContext ctx) {
     showAboutDialog(
         context: ctx,
-        applicationVersion: '1.3.0+4',
+        applicationVersion: '1.3.0',
         applicationIcon: Image.asset('images/logo.png'),
         children: [
           Text(
