@@ -25,11 +25,11 @@ To see exactly what features are supported on each platform, please [see](https:
 
 ### Automated testing:
 
-See https://github.com/certaintls/certaintls.app/wiki/Automated-tests-and-import-certs-to-backend-server
+See [WIKI](https://github.com/certaintls/certaintls.app/wiki/Automated-tests-and-import-certs-to-backend-server)
 
 ### Cron jobs:
 
-See https://github.com/certaintls/certaintls.app/wiki/Automated-tests-and-import-certs-to-backend-server (same as above, will spin off in the near future)
+See [WIKI](https://github.com/certaintls/certaintls.app/wiki/Automated-tests-and-import-certs-to-backend-server) (same as above, will spin off in the near future)
 
 ## Support:
 
