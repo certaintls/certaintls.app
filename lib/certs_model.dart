@@ -81,21 +81,18 @@ class CertsModel extends ChangeNotifier {
       });
     });
 
-    // SharedPreference isn't avaiable on Windows yet
-    if (!Platform.isWindows) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String userUuid = prefs.getString('user_id');
-      // 1. Check existing user with UUID from sharedpreference
-      if (userUuid == null || userUuid.isEmpty) {
-        // 2. Create a new user if UUID empty, and store in sharedpreference
-        userUuid = await verifier.createDevice(certsRef);
-        prefs.setString('user_id', userUuid);
-        // TODO: 3. Check/Upload unknown certs
-      } else {
-        // TODO: 3. Check/Upload unknown certs
-        // 4. Update device info.
-        await verifier.updateDevice(userUuid, certsRef);
-      }
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userUuid = prefs.getString('user_id');
+    // 1. Check existing user with UUID from sharedpreference
+    if (userUuid == null || userUuid.isEmpty) {
+      // 2. Create a new user if UUID empty, and store in sharedpreference
+      userUuid = await verifier.createDevice(certsRef);
+      prefs.setString('user_id', userUuid);
+      // TODO: 3. Check/Upload unknown certs
+    } else {
+      // TODO: 3. Check/Upload unknown certs
+      // 4. Update device info.
+      await verifier.updateDevice(userUuid, certsRef);
     }
   }
 
