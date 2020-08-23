@@ -24,7 +24,7 @@ jobs:
       with:
         channel: 'dev'
 
-    - run: git clone --branch shared git@github.com:franciscojma86/plugins.git --depth 1 ../plugins
+    - run: git clone --branch shared https://github.com/franciscojma86/plugins.git --depth 1 ../plugins
     - run: touch .env
     - run: flutter pub get
     - run: flutter analyze
