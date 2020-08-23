@@ -2,7 +2,7 @@
 
 name: CI
 
-# Controls when the action will run. Triggers the workflow on push or pull request 
+# Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on: push
 
@@ -22,8 +22,9 @@ jobs:
         java-version: '12.x'
     - uses: subosito/flutter-action@v1
       with:
-        channel: 'dev' 
+        channel: 'dev'
 
+    - run: git clone --branch shared git@github.com:franciscojma86/plugins.git --depth 1 ../plugins
     - run: touch .env
     - run: flutter pub get
     - run: flutter analyze
