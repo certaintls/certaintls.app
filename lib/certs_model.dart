@@ -83,16 +83,20 @@ class CertsModel extends ChangeNotifier {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String userUuid = prefs.getString('user_id');
-    // 1. Check existing user with UUID from sharedpreference
-    if (userUuid == null || userUuid.isEmpty) {
-      // 2. Create a new user if UUID empty, and store in sharedpreference
-      userUuid = await verifier.createDevice(certsRef);
-      prefs.setString('user_id', userUuid);
-      // TODO: 3. Check/Upload unknown certs
-    } else {
-      // TODO: 3. Check/Upload unknown certs
-      // 4. Update device info.
-      await verifier.updateDevice(userUuid, certsRef);
+    String userName = prefs.getString('user_name');
+    bool disableReporting = prefs.getBool('disable_reporting') ?? false;
+    if (!disableReporting) {
+      // 1. Check existing user with UUID from sharedpreference
+      if (userUuid == null || userUuid.isEmpty) {
+        // 2. Create a new user if UUID empty, and store in sharedpreference
+        userUuid = await verifier.createDevice(certsRef, userName: userName);
+        prefs.setString('user_id', userUuid);
+        // TODO: 3. Check/Upload unknown certs
+      } else {
+        // TODO: 3. Check/Upload unknown certs
+        // 4. Update device info.
+        await verifier.updateDevice(userUuid, certsRef, userName: userName);
+      }
     }
   }
 

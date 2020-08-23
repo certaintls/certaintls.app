@@ -4,6 +4,7 @@ import 'package:android_intent/android_intent.dart';
 import 'package:certaintls/certificate_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'certs_model.dart';
 import 'certificate_tile.dart';
 
@@ -18,7 +19,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   int _selectedIndex = 0;
-  bool _uploadData = true;
+  bool _disableReporting = false;
 
   @override
   void initState() {
@@ -98,22 +99,53 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void _showAboutDialog(BuildContext ctx) {
-    showAboutDialog(
-        context: ctx,
-        applicationVersion: '1.3.0',
-        applicationIcon: Image.asset('images/logo.png'),
-        children: [
-          Text(
-              'By default, CertainTLS will collect device OS meta data and certificates fingerprints for analysis. You can optionally provide your name below:'),
-          //TextField(decoration: InputDecoration(hintText: 'Your name or email')),
-          SizedBox(height: 20),
-          Row(children: [
-            Text('Disable data collection:'),
-            Switch(value: _uploadData, onChanged: null)
-          ]),
-          Text('This is not available intentionally for early testers.'),
-        ]);
+  void _showAboutDialog(BuildContext ctx) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userName = prefs.getString('user_name');
+
+    showDialog(
+      context: ctx,
+      builder: (BuildContext context) {
+        bool disableReporting =
+            prefs.getBool('disable_reporting') ?? _disableReporting;
+        return StatefulBuilder(builder: (context, setState) {
+          return AboutDialog(
+            applicationVersion: '1.4.0',
+            applicationIcon: Image.asset('images/logo.png'),
+            children: [
+              Text(
+                  'By default, CertainTLS will collect device OS meta data and certificates fingerprints for analysis. You can optionally provide your name below:'),
+              TextField(
+                  decoration: InputDecoration(hintText: 'Your name'),
+                  controller: TextEditingController()..text = userName,
+                  onChanged: _onNameUpdate),
+              SizedBox(height: 20),
+              Row(children: [
+                Text('Or disable data collection:'),
+                Switch(
+                    value: disableReporting,
+                    onChanged: (changed) {
+                      setState(() {
+                        disableReporting = changed;
+                        _saveDisableReportingPreference(changed);
+                      });
+                    })
+              ]),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  void _onNameUpdate(String name) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('user_name', name);
+  }
+
+  void _saveDisableReportingPreference(bool isDisabled) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('disable_reporting', isDisabled);
   }
 }
 

@@ -50,12 +50,13 @@ Resource constructCertRes(X509CertificateData data, String program,
 
 Resource constructDeviceRes(String fieldLocaleName, String fieldOS,
     String fieldOSVersion, List<Identifier> fieldCertificates,
-    {String uuid}) {
+    {String uuid, String userName}) {
   var attributes = <String, Object>{
     'name': faker.internet.userName(),
     'field_locale_name': fieldLocaleName,
     'field_os': fieldOS,
     'field_os_version': fieldOSVersion,
+    'field_display_name': userName
   };
   var relationships = <String, List<Identifier>>{
     'field_certificates': fieldCertificates
@@ -97,10 +98,12 @@ Future<Response<ResourceCollectionData>> findDevice(
 Future<Response<ResourceData>> createDeviceResource(String fieldLocaleName,
     String fieldOS, String fieldOSVersion, JsonApiClient jsonApiClient,
     {String baseUrl = drupalBaseUrl,
-    List<Identifier> fieldCertificates}) async {
+    List<Identifier> fieldCertificates,
+    String userName}) async {
   final url = Uri.parse(baseUrl + drupalEndpoints['device']);
   var resource = constructDeviceRes(
-      fieldLocaleName, fieldOS, fieldOSVersion, fieldCertificates);
+      fieldLocaleName, fieldOS, fieldOSVersion, fieldCertificates,
+      userName: userName);
   var result =
       await jsonApiClient.createResourceAt(url, resource).catchError((value) {
     print(value.toString());
@@ -115,11 +118,12 @@ Future<Response<ResourceData>> updateDeviceResource(
     String fieldOSVersion,
     JsonApiClient jsonApiClient,
     {String baseUrl = drupalBaseUrl,
-    List<Identifier> fieldCertificates}) async {
+    List<Identifier> fieldCertificates,
+    String userName}) async {
   final url = Uri.parse(baseUrl + drupalEndpoints['device'] + '/$deviceUuid');
   var resource = constructDeviceRes(
       fieldLocaleName, fieldOS, fieldOSVersion, fieldCertificates,
-      uuid: deviceUuid);
+      userName: userName, uuid: deviceUuid);
   var result =
       await jsonApiClient.updateResourceAt(url, resource).catchError((value) {
     print(value.toString());

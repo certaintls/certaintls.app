@@ -65,22 +65,24 @@ class CertainTLSServerVerifier implements CertificateVerifier {
     });
   }
 
-  Future<String> createDevice(List<Identifier> certificates) async {
+  Future<String> createDevice(List<Identifier> certificates,
+      {String userName}) async {
     var result = await createDeviceResource(
         Platform.localeName,
         Platform.operatingSystem,
         Platform.operatingSystemVersion,
         jsonApiClient,
         baseUrl: drupalBaseUrl,
-        fieldCertificates: certificates);
+        fieldCertificates: certificates,
+        userName: userName);
     if (result.statusCode == 201)
       return result.data.resourceObject.id;
     else
       return '';
   }
 
-  Future<bool> updateDevice(
-      String deviceUuid, List<Identifier> certificates) async {
+  Future<bool> updateDevice(String deviceUuid, List<Identifier> certificates,
+      {String userName}) async {
     var result = await updateDeviceResource(
         deviceUuid,
         Platform.localeName,
@@ -88,7 +90,8 @@ class CertainTLSServerVerifier implements CertificateVerifier {
         Platform.operatingSystemVersion,
         jsonApiClient,
         baseUrl: drupalBaseUrl,
-        fieldCertificates: certificates);
+        fieldCertificates: certificates,
+        userName: userName);
     if (result.statusCode == 200)
       return true;
     else
