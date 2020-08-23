@@ -11,21 +11,24 @@ jobs:
   # This workflow contains a single job called "build"
   build-and-test:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
     - uses: actions/setup-java@v1
-      with:
-        java-version: '12.x'
     - uses: subosito/flutter-action@v1
       with:
         channel: 'dev'
 
     - run: git clone --branch shared https://github.com/franciscojma86/plugins.git --depth 1 ../plugins
     - run: touch .env
+    - run: dart --version
+    - run: flutter --version
     - run: flutter pub get
     - run: flutter analyze
     - run: flutter test
