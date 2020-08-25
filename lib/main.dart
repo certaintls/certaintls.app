@@ -19,7 +19,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   int _selectedIndex = 0;
-  bool _disableReporting = false;
+  bool _allowReporting = false;
 
   @override
   void initState() {
@@ -101,33 +101,33 @@ class _MyAppState extends State<MyApp> {
 
   void _showAboutDialog(BuildContext ctx) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String userName = prefs.getString('user_name');
 
     showDialog(
       context: ctx,
       builder: (BuildContext context) {
-        bool disableReporting =
-            prefs.getBool('disable_reporting') ?? _disableReporting;
+        bool allowReporting =
+            prefs.getBool('allow_reporting') ?? _allowReporting;
         return StatefulBuilder(builder: (context, setState) {
+          String userName = prefs.getString('user_name');
           return AboutDialog(
-            applicationVersion: '1.4.0',
+            applicationVersion: '1.4.1',
             applicationIcon: Image.asset('images/logo.png'),
             children: [
               Text(
-                  'By default, CertainTLS will collect device OS meta data and certificates fingerprints for analysis. You can optionally provide your name below:'),
+                  "Please help make CertainTLS better by allowing us to collect device operating system metadata and certificates' fingerprints for analysis. None of the above is personally identifying information. You can optionally provide your name below:"),
               TextField(
                   decoration: InputDecoration(hintText: 'Your name'),
                   controller: TextEditingController()..text = userName,
                   onChanged: _onNameUpdate),
               SizedBox(height: 20),
               Row(children: [
-                Text('Or disable data collection:'),
+                Text('Allow data collection?'),
                 Switch(
-                    value: disableReporting,
+                    value: allowReporting,
                     onChanged: (changed) {
                       setState(() {
-                        disableReporting = changed;
-                        _saveDisableReportingPreference(changed);
+                        allowReporting = changed;
+                        _saveAllowReportingPreference(changed);
                       });
                     })
               ]),
@@ -143,9 +143,9 @@ class _MyAppState extends State<MyApp> {
     prefs.setString('user_name', name);
   }
 
-  void _saveDisableReportingPreference(bool isDisabled) async {
+  void _saveAllowReportingPreference(bool isAllowed) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('disable_reporting', isDisabled);
+    prefs.setBool('allow_reporting', isAllowed);
   }
 }
 

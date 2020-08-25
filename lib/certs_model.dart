@@ -84,8 +84,8 @@ class CertsModel extends ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String userUuid = prefs.getString('user_id');
     String userName = prefs.getString('user_name');
-    bool disableReporting = prefs.getBool('disable_reporting') ?? false;
-    if (!disableReporting) {
+    bool allowReporting = prefs.getBool('allow_reporting') ?? false;
+    if (allowReporting) {
       // 1. Check existing user with UUID from sharedpreference
       if (userUuid == null || userUuid.isEmpty) {
         // 2. Create a new user if UUID empty, and store in sharedpreference
