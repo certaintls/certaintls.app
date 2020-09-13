@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'certs_model.dart';
 import 'certificate_tile.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() => runApp(ChangeNotifierProvider(
     create: (context) => CertsModel(),
@@ -110,7 +111,7 @@ class _MyAppState extends State<MyApp> {
         return StatefulBuilder(builder: (context, setState) {
           String userName = prefs.getString('user_name');
           return AboutDialog(
-            applicationVersion: '1.4.1',
+            applicationVersion: '1.4.2',
             applicationIcon: Image.asset('images/logo.png'),
             children: [
               Text(
@@ -120,6 +121,17 @@ class _MyAppState extends State<MyApp> {
                   controller: TextEditingController()..text = userName,
                   onChanged: _onNameUpdate),
               SizedBox(height: 20),
+              Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                FlatButton(
+                  onPressed: _openPrivacyPolicy,
+                  child: Text(
+                    'Read the CertainTLS privacy policy ',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                  padding: EdgeInsets.zero,
+                ),
+                Icon(Icons.open_in_browser_outlined, color: Colors.blue)
+              ]),
               Row(children: [
                 Text('Allow data collection?'),
                 Switch(
@@ -146,6 +158,16 @@ class _MyAppState extends State<MyApp> {
   void _saveAllowReportingPreference(bool isAllowed) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('allow_reporting', isAllowed);
+  }
+
+  void _openPrivacyPolicy() async {
+    const url =
+        'https://github.com/certaintls/certaintls/blob/master/PRIVACY.md#privacy-statement---certaintls';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }
 
