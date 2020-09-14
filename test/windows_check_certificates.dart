@@ -28,9 +28,10 @@ void main() async {
 
   test('Check Windows stock CA root certificates', () async {
     var finder = WindowsCertificateManager();
-    var certs = finder
-        .getCertsByStore(WindowsCertificateManager.systemTrustedCertsPath);
+    var certs;
     if (!ignoreLocalCerts) {
+      var certs = finder
+          .getCertsByStore(WindowsCertificateManager.systemTrustedCertsPath);
       await finder.verifyAll(certs);
       print(
           'The number of root certificates found: ' + certs.length.toString());

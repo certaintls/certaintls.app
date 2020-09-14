@@ -107,6 +107,8 @@ class WindowsCertificateManager
 
     // Use html parser and query selector
     var document = parse(response.body);
+    List<Element> msStatus =
+        document.querySelectorAll('.slds-table tr > td:last-child');
     List<Element> caOwners =
         document.querySelectorAll('.slds-table tr > td:first-child');
     // last row is an empty one
@@ -117,12 +119,13 @@ class WindowsCertificateManager
         document.querySelectorAll('.slds-table tr > td:nth-child(7)');
 
     for (int i = 0; i < caOwners.length; i++) {
+      String status = msStatus[i].querySelector('span').text;
       String caOwner = caOwners[i].querySelector('span').text;
       String commonName = commonNames[i].querySelector('span').text;
       String sha256 = fileUrls[i].querySelector('a').text;
       String url = fileUrls[i].querySelector('a').attributes['href'];
       X509CertificateData data;
-      if (downloadOnlineCert) {
+      if (downloadOnlineCert && status != 'Disabled') {
         data = await _downloadCert(url, client: client);
       }
       if (!downloadOnlineCert || data != null) {
