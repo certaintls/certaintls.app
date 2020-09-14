@@ -1,5 +1,3 @@
-@Timeout(const Duration(seconds: 1800))
-
 import 'package:certaintls/windows_certificate_manager.dart';
 import 'package:certaintls/x509certificate.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -30,7 +28,7 @@ void main() async {
     var finder = WindowsCertificateManager();
     var certs;
     if (!ignoreLocalCerts) {
-      var certs = finder
+      certs = finder
           .getCertsByStore(WindowsCertificateManager.systemTrustedCertsPath);
       await finder.verifyAll(certs);
       print(
@@ -54,5 +52,5 @@ void main() async {
       var jsonApiClient = JsonApiClient(httpHandler);
       await syncCertsToDrupal(certs, jsonApiClient, program, baseUrl: baseUrl);
     }
-  });
+  }, timeout: Timeout.none);
 }

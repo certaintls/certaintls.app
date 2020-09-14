@@ -82,7 +82,7 @@ class WindowsCertificateManager
       if (onlineCerts[i].data == null) {
         data = await _downloadCert(onlineCerts[i].fileUrl);
       }
-      if (data.publicKeyData.sha256Thumbprint ==
+      if (data?.publicKeyData?.sha256Thumbprint ==
           cert.data.publicKeyData.sha256Thumbprint) {
         cert.status = X509CertificateStatus.statusVerified;
       } else
