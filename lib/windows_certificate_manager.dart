@@ -82,8 +82,9 @@ class WindowsCertificateManager
       if (onlineCerts[i].data == null) {
         data = await _downloadCert(onlineCerts[i].fileUrl);
       }
+      // Some Win certs don't have sha256
       if (data?.publicKeyData?.sha256Thumbprint ==
-          cert.data.publicKeyData.sha256Thumbprint) {
+          cert.data.publicKeyData?.sha256Thumbprint) {
         cert.status = X509CertificateStatus.statusVerified;
       } else
         cert.status = X509CertificateStatus.statusCompromised;
