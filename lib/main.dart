@@ -52,12 +52,12 @@ class _MyAppState extends State<MyApp> {
           BottomNavigationBarItem(
             backgroundColor: Theme.of(context).primaryColor,
             icon: Icon(Icons.public),
-            title: Text('Authorities'),
+            label: 'Authorities',
           ),
           BottomNavigationBarItem(
             backgroundColor: Theme.of(context).primaryColor,
             icon: Icon(Icons.cloud_download),
-            title: Text('User Installed'),
+            label: 'User Installed',
           ),
           BottomNavigationBarItem(
               backgroundColor: Theme.of(context).primaryColor,
@@ -86,7 +86,7 @@ class _MyAppState extends State<MyApp> {
                                   textAlign: TextAlign.center,
                                 )))),
               ]),
-              title: Text('Problems'))
+              label: 'Problems')
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
