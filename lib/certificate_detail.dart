@@ -133,13 +133,13 @@ class CertificateDetail extends StatelessWidget {
         builder: (_) => AlertDialog(
               title: Text('Disable ' + getTitle(cert.data) + '?'),
               content: Text(Platform.isAndroid
-                  ? 'Disabling certificate on Android through third party is not supported by the system.\n\n'
-                      'However, CertainTLS cannot detect if you have disabled any certificates on Android.'
-                  : 'Confirm?'),
+                  ? 'On the next screen, scroll to the "${getTitle(cert.data)}" certificate and disable it.'
+                  : 'Confirm'),
               actions: [
                 FlatButton(
-                    onPressed: () => {Navigator.pop(ctx)}, child: Text('No')),
-                FlatButton(onPressed: () => _distrust(ctx), child: Text('Yes'))
+                    onPressed: () => {Navigator.pop(ctx)},
+                    child: Text('Cancel')),
+                FlatButton(onPressed: () => _distrust(ctx), child: Text('OK'))
               ],
             ),
         barrierDismissible: false);

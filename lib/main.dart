@@ -41,7 +41,13 @@ class _MyAppState extends State<MyApp> {
         actions: <Widget>[
           IconButton(
               icon: Icon(Icons.settings),
-              onPressed: () => _showAboutDialog(context))
+              onPressed: () => _showAboutDialog(context)),
+          FlatButton(
+            textColor: Colors.white,
+            onPressed: () => _contactUs(),
+            child: Text("Feedback"),
+            shape: CircleBorder(side: BorderSide(color: Colors.transparent)),
+          )
         ],
       ),
       body: bodies[_selectedIndex],
@@ -111,7 +117,7 @@ class _MyAppState extends State<MyApp> {
         return StatefulBuilder(builder: (context, setState) {
           String userName = prefs.getString('user_name');
           return AboutDialog(
-            applicationVersion: '1.4.2',
+            applicationVersion: '1.4.3',
             applicationIcon: Image.asset('images/logo.png'),
             children: [
               Text(
@@ -163,6 +169,15 @@ class _MyAppState extends State<MyApp> {
   void _openPrivacyPolicy() async {
     const url =
         'https://github.com/certaintls/certaintls/blob/master/PRIVACY.md#privacy-statement---certaintls';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  void _contactUs() async {
+    const url = 'https://certaintls.app/contact/certaintls_app_feedback';
     if (await canLaunch(url)) {
       await launch(url);
     } else {
